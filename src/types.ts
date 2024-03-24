@@ -5,3 +5,13 @@ export type ModalProps<T> = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 };
+
+export type MetaPagination = {
+  isFirstPage: boolean;
+  isLastPage: boolean;
+  currentPage: number;
+  previousPage: number | null;
+  nextPage: number | null;
+  pageCount: number;
+  totalCount: number;
+};

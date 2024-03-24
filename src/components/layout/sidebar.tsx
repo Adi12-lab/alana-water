@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Sidebar as SidebarComponent, Menu, MenuItem } from "react-pro-sidebar";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { GripVertical, Warehouse, GanttChartSquare, Power } from "lucide-react";
+import { GripVertical, Warehouse, GanttChartSquare, Power, Milk } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 
 import { axiosInstance, rgbToHex } from "~/lib/utils";
@@ -18,7 +18,6 @@ interface SidebarProps {
 function Sidebar({ toggled, setToggled, setBroken }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   // const [toggled, setToggled] = useState(false);
 
@@ -91,6 +90,13 @@ function Sidebar({ toggled, setToggled, setBroken }: SidebarProps) {
           active={pathname === "/transaksi"}
         >
           Transaksi
+        </MenuItem>
+        <MenuItem
+          component={<Link href="/jumlah-galon" />}
+          icon={<Milk size={20} />}
+          active={pathname === "/jumlah-galon"}
+        >
+          Jumlah Galon
         </MenuItem>
         <MenuItem component={<Link href="/" />}> Produk</MenuItem>
         <MenuItem icon={<Power />} onClick={() => logoutMutation.mutate()}>

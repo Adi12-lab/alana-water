@@ -1,5 +1,5 @@
 {
-  "name": "galon",
+  "name": "alana-water",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -37,6 +37,7 @@
     "react-hook-form": "^7.51.1",
     "react-hot-toast": "^2.4.1",
     "react-pro-sidebar": "^1.1.0",
+    "recharts": "^2.12.3",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.22.4"

@@ -37,3 +37,9 @@ export type Transaksi = NewTransaksi & {
   total: number;
   jenisTransaksi: JenisTranksasi;
 };
+
+export const jumlahGalonSchema = z.object({
+  jumlah: z.number({ required_error: "Jumlah galon diperlukan" }),
+});
+
+export type JumlahGalon = z.infer<typeof jumlahGalonSchema>;

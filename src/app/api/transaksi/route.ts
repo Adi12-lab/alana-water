@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prismaInstance, prismaPaginate } from "~/lib/prisma";
 import { NewTransaksi } from "~/schema";
@@ -71,14 +72,35 @@ export async function GET(req: NextRequest) {
   try {
     const params = req.nextUrl.searchParams;
     const page = parseInt(params.get("page") as string);
+    const pembeli = params.get("pembeli");
+    const tanggal = params.get("tanggal");
+
+    const whereQuery: Prisma.TransaksiWhereInput = {
+      namaPembeli: {
+        contains: pembeli || undefined,
+        mode: "insensitive",
+      },
+      AND: {
+        tanggal: tanggal
+          ? {
+              gte: new Date(tanggal),
+              lt: new Date(
+                new Date(tanggal).setDate(new Date(tanggal).getDate() + 1)
+              ),
+            }
+          : {},
+      },
+    };
+
     const [result, meta] = await prismaPaginate.transaksi
       .paginate({
+        where: whereQuery,
         include: {
           jenisTransaksi: true,
         },
       })
       .withPages({
-        limit: 3,
+        limit: 6,
         page: !!page ? page : 1,
         includePageCount: true,
       });
@@ -87,7 +109,7 @@ export async function GET(req: NextRequest) {
       return { ...trans, total };
     });
 
-    return NextResponse.json({ ...payload, ...meta });
+    return NextResponse.json({ payload, ...meta });
   } catch (err) {
     return NextResponse.json({
       status: 500,

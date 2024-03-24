@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prismaInstance } from "~/lib/prisma";
 import _ from "lodash";
+import { bulanIndonesia } from "~/constant";
+import { prismaInstance } from "~/lib/prisma";
 export async function GET(req: NextRequest) {
   try {
     const params = req.nextUrl.searchParams;
@@ -54,7 +55,7 @@ export async function GET(req: NextRequest) {
 
       const groupedByMonth = _.groupBy(withTotal, (transaksi) => {
         const date = new Date(transaksi.tanggal);
-        return `${date.getFullYear()}-${date.getMonth() + 1}`;
+        return `${bulanIndonesia[date.getMonth() + 1]}`;
       });
 
       const withMonthlyTotal = _.mapValues(groupedByMonth, (transactions) => {
@@ -64,7 +65,6 @@ export async function GET(req: NextRequest) {
           monthlyTotal,
         };
       });
-
       const totalPendapatanTahun = _.sumBy(withTotal, "total");
 
       return NextResponse.json({
