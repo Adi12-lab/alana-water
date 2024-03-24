@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { createPaginator } from "prisma-extension-pagination";
 
 declare global {
   var prisma: PrismaClient | undefined;
@@ -15,4 +16,22 @@ if (process.env.NODE_ENV === "production") {
   prismaInstance = global.prisma;
 }
 
-export { prismaInstance };
+const paginate = createPaginator({
+  pages: {
+    includePageCount: true,
+    limit: 3,
+  },
+  cursor: {
+    limit: 3,
+  },
+});
+
+const prismaPaginate = prismaInstance.$extends({
+  model: {
+    transaksi: {
+      paginate,
+    },
+  },
+});
+
+export { prismaInstance, prismaPaginate };

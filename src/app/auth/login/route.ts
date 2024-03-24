@@ -12,7 +12,10 @@ export async function POST(req: NextRequest) {
     const { username, password } = payload;
 
     if (!username || !password) {
-      return NextResponse.json({ status: 400, message: "Login tidak valid" });
+      return NextResponse.json(
+        { message: "Login tidak valid" },
+        { status: 400 }
+      );
     }
 
     const findUser = await prismaInstance.users.findUnique({
@@ -22,16 +25,18 @@ export async function POST(req: NextRequest) {
     });
 
     if (!findUser) {
-      return NextResponse.json({
-        status: 401,
-        message: "Username tidak ditemukan",
-      });
+      return NextResponse.json(
+        {
+          message: "Username tidak ditemukan",
+        },
+        { status: 401 }
+      );
     }
 
     const match = await bcrypt.compare(password, findUser.password);
 
     if (!match) {
-      return NextResponse.json({ status: 401, message: "Password salah" });
+      return NextResponse.json({ message: "Password salah" }, { status: 401 });
     }
     const login = jwt.sign({ username }, process.env.SECRET_KEY as string);
     cookies().set("access_token", login);

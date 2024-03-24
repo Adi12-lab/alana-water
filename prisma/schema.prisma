@@ -17,3 +17,25 @@ model Users {
   username String @id @db.VarChar(255)
   password String @db.VarChar(255)
 }
+
+model JenisTranksasi {
+  id        Int         @id @default(autoincrement())
+  nama      String      @db.VarChar(25)
+  harga     Int
+  transaksi Transaksi[]
+}
+
+model GalonTersisa {
+  id     Int @id @default(autoincrement())
+  jumlah Int
+}
+
+model Transaksi {
+  kode             String         @id @default(cuid()) @db.VarChar(255)
+  namaPembeli      String         @map("nama_pembeli") @db.VarChar(255)
+  tanggal          DateTime
+  kuantitas        Int
+  jenisTransaksiId Int
+  jenisTransaksi   JenisTranksasi @relation(fields: [jenisTransaksiId], references: [id])
+  harga            Int
+}

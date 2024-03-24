@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -41,9 +41,9 @@ function Login() {
   const loginMutation = useMutation({
     mutationKey: ["login"],
     mutationFn: async (payload: Auth) => {
-      return await axiosInstance.post("/login");
+      return axiosInstance.post("/auth/login", payload).then((data) => data.data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       router.push("dashboard");
     },
     onError: () => {
