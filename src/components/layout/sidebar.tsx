@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Sidebar as SidebarComponent, Menu, MenuItem } from "react-pro-sidebar";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { GripVertical, Warehouse, GanttChartSquare, Power, Milk } from "lucide-react";
+import { GripVertical, Warehouse, GanttChartSquare, Power, Milk, List } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 
 import { axiosInstance, rgbToHex } from "~/lib/utils";
@@ -24,10 +24,11 @@ function Sidebar({ toggled, setToggled, setBroken }: SidebarProps) {
   const logoutMutation = useMutation({
     mutationKey: ["logout"],
     mutationFn: () => {
-      return axiosInstance.delete("/auth/logout");
+      return axiosInstance.post("/auth/logout");
+      
     },
     onSuccess: () => {
-      router.replace("/auth/login");
+      router.replace("/login");
     },
   });
 
@@ -50,7 +51,7 @@ function Sidebar({ toggled, setToggled, setBroken }: SidebarProps) {
             collapsed ? "hidden" : ""
           }`}
         >
-          Admin Page
+          Alana Water
         </h1>
         <button type="button" onClick={() => setCollapsed(!collapsed)}>
           <GripVertical className="text-stone-400 hover:text-stone-300" />
@@ -98,7 +99,13 @@ function Sidebar({ toggled, setToggled, setBroken }: SidebarProps) {
         >
           Jumlah Galon
         </MenuItem>
-        <MenuItem component={<Link href="/" />}> Produk</MenuItem>
+        <MenuItem
+          component={<Link href="/jenis-transaksi" />}
+          icon={<List size={20} />}
+          active={pathname === "/jenis-transaksi"}
+        >
+          Jenis Transaksi
+        </MenuItem>
         <MenuItem icon={<Power />} onClick={() => logoutMutation.mutate()}>
           Logout
         </MenuItem>

@@ -1,10 +1,16 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useSearchParams, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { MoreHorizontal, Pencil, Trash2, Calendar as CalendarIcon} from "lucide-react";
- 
-import { cn } from "~/lib/utils"
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Calendar as CalendarIcon,
+  Loader2,
+} from "lucide-react";
+import { useDebounce } from "~/hooks";
+import { cn } from "~/lib/utils";
 
 import {
   Table,
@@ -23,31 +29,22 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
-
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "~/components/ui/pagination";
+import PaginationComponent from "~/components/layout/pagination";
 import { Input } from "~/components/ui/input";
 
-import { Calendar } from "~/components/ui/calendar"
+import { Calendar } from "~/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "~/components/ui/popover"
-
+} from "~/components/ui/popover";
 
 import AddTransaski from "./component/add-transaksi";
 import { axiosInstance, formatTanggal, formatRupiah } from "~/lib/utils";
 import { Transaksi } from "~/schema";
 import { EditDeleteOperation, MetaPagination } from "~/types";
 import DeleteTransaksi from "./component/delete-transaksi";
+import EditTransaksi from "./component/edit-transaksi";
 
 export type DataModal = {
   operation: EditDeleteOperation;
@@ -56,7 +53,8 @@ export type DataModal = {
 
 export type DataPagination = {
   payload: Transaksi[];
-} & MetaPagination;
+  meta: MetaPagination;
+};
 
 export default function Transaksi() {
   const searchParams = useSearchParams();
@@ -64,15 +62,20 @@ export default function Transaksi() {
   const page = searchParams.get("page") || "1";
 
   const [tanggal, setTanggal] = useState<Date>();
-  const [pembeli, setPembeli] = useState('');
+  const [pembeli, setPembeli] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [dataModal, setDataModal] = useState<DataModal>();
+  const pembeliDebounce = useDebounce(pembeli, 500);
 
-  const { data } = useQuery<DataPagination>({
-    queryKey: ["transaksi", page, pembeli, tanggal],
+  const { data, isLoading } = useQuery<DataPagination>({
+    queryKey: ["transaksi", page, pembeliDebounce, tanggal],
     queryFn: async () => {
       return axiosInstance
-        .get(`/api/transaksi?page=${page ?? 1}&pembeli=${pembeli}&tanggal=${tanggal || ''}`)
+        .get(
+          `/api/transaksi?page=${
+            page ?? 1
+          }&pembeli=${pembeliDebounce}&tanggal=${tanggal || ""}`
+        )
         .then((data) => data.data);
     },
     staleTime: 1000 * 60 * 5,
@@ -85,7 +88,12 @@ export default function Transaksi() {
       </div>
 
       <div className="flex justify-between mb-4">
-        <Input placeholder="Cari Pembeli" className="w-1/3" value={pembeli} onChange={(e)=> setPembeli(e.target.value) }/>
+        <Input
+          placeholder="Cari Pembeli"
+          className="w-1/3"
+          value={pembeli}
+          onChange={(e) => setPembeli(e.target.value)}
+        />
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -96,7 +104,7 @@ export default function Transaksi() {
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {tanggal ? tanggal.toLocaleDateString('id-ID'): 'Pilih tanggal'}
+              {tanggal ? tanggal.toLocaleDateString("id-ID") : "Pilih tanggal"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
@@ -121,8 +129,17 @@ export default function Transaksi() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.payload &&
-            data.payload.map((trans) => (
+          {isLoading && !data ? (
+            <TableRow>
+              <TableCell colSpan={6}>
+                <div className="flex items-center justify-center gap-x-3">
+                  <Loader2 className="animate-spin" />
+                  <span>Mengambil data...</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            data?.payload.map((trans) => (
               <TableRow key={trans.kode}>
                 <TableCell>{formatTanggal(new Date(trans.tanggal))}</TableCell>
                 <TableCell>{trans.namaPembeli}</TableCell>
@@ -171,37 +188,19 @@ export default function Transaksi() {
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))}
+            ))
+          )}
         </TableBody>
       </Table>
-      {data && (
-        <Pagination>
-          <PaginationContent>
-            {data.previousPage && (
-              <PaginationItem>
-                <PaginationPrevious
-                  href={`${path}?page=${data.previousPage}`}
-                />
-              </PaginationItem>
-            )}
+      <div className="mt-4">
+        {data && <PaginationComponent data={data.meta} path={path} />}
+      </div>
 
-            {data.pageCount &&
-              [...Array(data.pageCount)].map((_, index) => (
-                <PaginationItem key={index}>
-                  <PaginationLink href={`${path}?page=${index + 1}`}>
-                    {index + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-
-            {data.nextPage && (
-              <PaginationItem>
-                <PaginationNext href={`${path}?page=${data.nextPage}`} />
-              </PaginationItem>
-            )}
-          </PaginationContent>
-        </Pagination>
-      )}
+      <EditTransaksi
+        isOpen={openModal}
+        setIsOpen={setOpenModal}
+        meta={dataModal as DataModal}
+      />
 
       <DeleteTransaksi
         isOpen={openModal}

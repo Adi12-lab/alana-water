@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prismaInstance } from "~/lib/prisma";
-import { NewJenisTranksasi } from "~/schema";
+import { NewJenisTransaksi } from "~/schema";
 
 export async function POST(req: NextRequest) {
   try {
-    const payload: NewJenisTranksasi = await req.json();
+    const payload: NewJenisTransaksi = await req.json();
 
     const { harga, nama } = payload;
 

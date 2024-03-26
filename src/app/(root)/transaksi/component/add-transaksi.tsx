@@ -81,7 +81,7 @@ export default function AddTransaski() {
   return (
     <Dialog open={openModal} onOpenChange={setOpenModal}>
       <DialogTrigger asChild>
-        <Button variant={"outline"} onClick={() => setOpenModal(true)} >
+        <Button variant={"outline"} onClick={() => setOpenModal(true)}>
           Tambah Transaksi
         </Button>
       </DialogTrigger>
@@ -114,7 +114,12 @@ export default function AddTransaski() {
                     <Input
                       type="number"
                       {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      onChange={(e) => {
+                        const kuantitas = Number(e.target.value);
+                        if (kuantitas >= 0) {
+                          return field.onChange(kuantitas);
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

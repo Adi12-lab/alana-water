@@ -43,8 +43,8 @@ function Login() {
     mutationFn: async (payload: Auth) => {
       return axiosInstance.post("/auth/login", payload).then((data) => data.data);
     },
-    onSuccess: (data) => {
-      router.push("dashboard");
+    onSuccess: () => {
+      router.push("/");
     },
     onError: () => {
       toast.error("username / password salah");

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogClose,
 } from "~/components/ui/dialog";
 import {
   Form,
@@ -29,14 +29,19 @@ import {
 import { Input } from "~/components/ui/input";
 
 import { Button } from "~/components/ui/button";
-import { transaksiSchema, NewTransaksi } from "~/schema";
+import { transaksiSchema, NewTransaksi, JenisTransaksi } from "~/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "~/lib/utils";
-import { JenisTranksasi } from "@prisma/client";
 
-export default function AddTransaski() {
+import { DataModal } from "../client";
+import { ModalProps } from "~/types";
+
+export default function EditTransaksi({
+  meta,
+  isOpen,
+  setIsOpen,
+}: ModalProps<DataModal>) {
   const queryClient = useQueryClient();
-  const [openModal, setOpenModal] = useState(false);
   const form = useForm<NewTransaksi>({
     resolver: zodResolver(transaksiSchema),
     defaultValues: {
@@ -47,7 +52,17 @@ export default function AddTransaski() {
     },
   });
 
-  const { data = [] } = useQuery<JenisTranksasi[]>({
+  useEffect(() => {
+    console.log(form.formState.errors);
+    if (meta && meta.data) {
+      form.setValue("jenisTransaksiId", meta.data.jenisTransaksiId);
+      form.setValue("kuantitas", meta.data.kuantitas);
+      form.setValue("namaPembeli", meta.data.namaPembeli);
+      form.setValue("tanggal", new Date(meta.data.tanggal));
+    }
+  }, [form.formState.errors, meta]);
+
+  const { data = [] } = useQuery<JenisTransaksi[]>({
     queryKey: ["jenis-transaksi"],
     queryFn: async () => {
       return axiosInstance
@@ -58,19 +73,19 @@ export default function AddTransaski() {
   });
 
   const transaksiMutation = useMutation({
-    mutationKey: ["add-transaksi"],
+    mutationKey: ["edit-transaksi"],
     mutationFn: async (payload: NewTransaksi) => {
       return axiosInstance
-        .post("/api/transaksi", payload)
+        .put("/api/transaksi/" + meta.data.kode, payload)
         .then((data) => data.data);
     },
     onSuccess: () => {
-      toast.success("Transaksi berhasil ditambahkan");
-      setOpenModal(false);
+      toast.success("Transaksi berhasil diedit");
+      setIsOpen(false);
       queryClient.invalidateQueries({ queryKey: ["transaksi"] });
     },
     onError: () => {
-      toast.error("Transaksi gagal ditambahkan");
+      toast.error("Transaksi gagal diedit");
     },
   });
 
@@ -79,15 +94,10 @@ export default function AddTransaski() {
   }
 
   return (
-    <Dialog open={openModal} onOpenChange={setOpenModal}>
-      <DialogTrigger asChild>
-        <Button variant={"outline"} onClick={() => setOpenModal(true)}>
-          Tambah Transaksi
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen && meta.operation === "edit"} onOpenChange={setIsOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Tambah Transaksi</DialogTitle>
+          <DialogTitle>Edit Transaksi</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -128,7 +138,10 @@ export default function AddTransaski() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Jenis Transaksi</FormLabel>
-                  <Select onValueChange={(e) => field.onChange(Number(e))}>
+                  <Select
+                    value={field.value.toString()}
+                    onValueChange={(e) => field.onChange(Number(e))}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="jenis transaksi" />

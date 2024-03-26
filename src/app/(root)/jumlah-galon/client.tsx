@@ -1,5 +1,5 @@
 "use client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "~/lib/utils";
 import { Input } from "~/components/ui/input";
 import { JumlahGalon, jumlahGalonSchema } from "~/schema";
@@ -14,11 +14,12 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import toast from "react-hot-toast";
 
 export default function Client() {
+  const queryClient = useQueryClient();
   const { data } = useQuery<JumlahGalon>({
     queryKey: ["jumlah-galon"],
     queryFn: async () => {
@@ -33,12 +34,13 @@ export default function Client() {
         .put("/api/jumlah-galon", payload)
         .then((data) => data.data);
     },
-    onSuccess: ()=> {
-        toast.success("Jumlah galon berhasil di update")
+    onSuccess: () => {
+      toast.success("Jumlah galon berhasil di update");
+      queryClient.invalidateQueries({ queryKey: ["jumlah-galon"] });
     },
-    onError: ()=> {
-        toast.error("Jumlah galon gagal diupdate")
-    }
+    onError: () => {
+      toast.error("Jumlah galon gagal diupdate");
+    },
   });
 
   const form = useForm<JumlahGalon>({
@@ -54,38 +56,52 @@ export default function Client() {
     }
   }, [data, form]);
 
-  
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const angka = parseInt(e.target.value);
+    if (angka >= 0) {
+      form.setValue("jumlah", angka);
+    }
+  };
+
   function onSubmit(values: JumlahGalon) {
     jumlahGalonMutation.mutate(values);
   }
 
-  return data && (
-    <div>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center space-y-3">
-          <FormField
-            control={form.control}
-            name="jumlah"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    type="number"
-                    className="text-center font-bold text-lg w-fit"
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+  return (
+    data && (
+      <div>
+        <h2 className="text-center my-2 font-bold text-green-400 text-lg">
+          Galon tersedia : {data.jumlah}
+        </h2>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col items-center space-y-3"
+          >
+            <FormField
+              control={form.control}
+              name="jumlah"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      className="text-center font-bold w-fit"
+                      {...field}
+                      onChange={handleChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <Button type="submit" className="mx-auto">
-            Update
-          </Button>
-        </form>
-      </Form>
-    </div>
+            <Button type="submit" className="mx-auto">
+              Update
+            </Button>
+          </form>
+        </Form>
+      </div>
+    )
   );
 }

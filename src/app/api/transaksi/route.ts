@@ -98,6 +98,9 @@ export async function GET(req: NextRequest) {
         include: {
           jenisTransaksi: true,
         },
+        orderBy: {
+          tanggal: "desc",
+        },
       })
       .withPages({
         limit: 6,
@@ -109,7 +112,7 @@ export async function GET(req: NextRequest) {
       return { ...trans, total };
     });
 
-    return NextResponse.json({ payload, ...meta });
+    return NextResponse.json({ payload, meta: { ...meta } });
   } catch (err) {
     return NextResponse.json({
       status: 500,

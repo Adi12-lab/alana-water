@@ -15,8 +15,8 @@ export const jenisTransaksiSchema = z.object({
   harga: z.number().min(2, { message: "Harga jenis diperlukan" }),
 });
 
-export type NewJenisTranksasi = z.infer<typeof jenisTransaksiSchema>;
-export type JenisTranksasi = NewJenisTranksasi & { id: number };
+export type NewJenisTransaksi = z.infer<typeof jenisTransaksiSchema>;
+export type JenisTransaksi = NewJenisTransaksi & { id: number };
 
 export const transaksiSchema = z.object({
   namaPembeli: z
@@ -35,7 +35,7 @@ export type Transaksi = NewTransaksi & {
   kode: string;
   harga: number;
   total: number;
-  jenisTransaksi: JenisTranksasi;
+  jenisTransaksi: JenisTransaksi;
 };
 
 export const jumlahGalonSchema = z.object({

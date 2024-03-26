@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Menu, ShoppingCart } from "lucide-react";
 
 import { useMediaQuery } from "~/hooks";
 import Sidebar from "~/components/layout/sidebar";

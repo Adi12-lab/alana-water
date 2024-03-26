@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prismaInstance } from "~/lib/prisma";
+import { JumlahGalon } from "~/schema";
 
 export async function PUT(req: NextRequest) {
   try {
-    const jumlah: number = await req.json();
+    const payload: JumlahGalon = await req.json();
+    const {jumlah} = payload;
+
     const result = await prismaInstance.galonTersisa.update({
       where: {
         id: 1,
@@ -17,7 +20,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({
       status: 500,
       message: "[PUT_JUMLAH_GALON] " + err,
-    });
+    }, {status: 500});
   }
 }
 

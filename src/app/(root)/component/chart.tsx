@@ -37,10 +37,11 @@ export default function Chart() {
         `/api/transaksi/pendapatan?tahun=${year}`
       );
       const result = response.data;
-      const formatMonth = _.map(bulanIndonesia, (month) => ({
+      const formatMonth = _.map(bulanIndonesia, (month, index) => ({
         month,
-        monthlyTotal: _.get(result, `payload.${month}.monthlyTotal`),
+        monthlyTotal: _.get(result, `payload.${index+1}.monthlyTotal`),
       }));
+
       return {
         months: formatMonth,
         totalPendapatanTahun: result.totalPendapatanTahun,
@@ -52,7 +53,9 @@ export default function Chart() {
     data && (
       <>
         <div className="flex items-center justify-between">
-          <p className="text-green-600 font-semibold">Total Pendapatan : {formatRupiah(data.totalPendapatanTahun)}</p>
+          <p className="text-green-600 font-semibold">
+            Total Pendapatan : {formatRupiah(data.totalPendapatanTahun)}
+          </p>
           <div className="w-[200px]">
             <Select onValueChange={(value) => setYear(parseInt(value))}>
               <SelectTrigger>

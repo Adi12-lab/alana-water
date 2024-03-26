@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
 
       const groupedByMonth = _.groupBy(withTotal, (transaksi) => {
         const date = new Date(transaksi.tanggal);
-        return `${bulanIndonesia[date.getMonth() + 1]}`;
+        return `${(date.getMonth() + 1)}`;
       });
 
       const withMonthlyTotal = _.mapValues(groupedByMonth, (transactions) => {
