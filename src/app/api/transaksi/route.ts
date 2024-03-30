@@ -6,7 +6,8 @@ import { NewTransaksi } from "~/schema";
 export async function POST(req: NextRequest) {
   try {
     const payload: NewTransaksi = await req.json();
-    const { jenisTransaksiId, kuantitas, namaPembeli, tanggal } = payload;
+    const { jenisTransaksiId, kuantitas, namaPembeli, tanggal, galonKembali } =
+      payload;
 
     if (!jenisTransaksiId || !kuantitas || !namaPembeli || !tanggal) {
       return NextResponse.json(
@@ -20,7 +21,32 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (sisaGalon && sisaGalon.jumlah > 0) {
+    if (!sisaGalon) {
+      throw Error("Kesalahan database galon");
+    }
+
+    const findJenisTransaksi = await prismaInstance.jenisTranksasi.findUnique({
+      where: {
+        id: jenisTransaksiId,
+      },
+    });
+
+    if (!findJenisTransaksi) {
+      return NextResponse.json(
+        { message: "Jenis transaksi tidak ditemukan" },
+        { status: 400 }
+      );
+    }
+
+    if (kuantitas > sisaGalon.jumlah) {
+      return NextResponse.json(
+        { message: "Kuantitas melebihi sisa galon" },
+        { status: 400 }
+      );
+    }
+
+    if (findJenisTransaksi.id !== 3 && sisaGalon.jumlah > 0) {
+      //jika jenis transaksi bukan pinjam dan sisa galon lebih dari 0, maka kurangi galon
       await prismaInstance.galonTersisa.update({
         where: {
           id: 1,
@@ -31,35 +57,19 @@ export async function POST(req: NextRequest) {
           },
         },
       });
-
-      const findJenisTransaksi = await prismaInstance.jenisTranksasi.findUnique(
-        {
-          where: {
-            id: jenisTransaksiId,
-          },
-        }
-      );
-
-      if (findJenisTransaksi) {
-        const result = await prismaInstance.transaksi.create({
-          data: {
-            kuantitas,
-            namaPembeli,
-            tanggal,
-            jenisTransaksiId,
-            harga: findJenisTransaksi.harga,
-          },
-        });
-        return NextResponse.json(result);
-      } else {
-        throw Error("Jenis transaksi tidak ada");
-      }
-    } else {
-      return NextResponse.json(
-        { message: "Sisa galon sudah habis" },
-        { status: 409 }
-      );
     }
+
+    const result = await prismaInstance.transaksi.create({
+      data: {
+        kuantitas,
+        namaPembeli,
+        tanggal,
+        jenisTransaksiId,
+        galonKembali,
+        harga: findJenisTransaksi.harga,
+      },
+    });
+    return NextResponse.json(result);
   } catch (err) {
     return NextResponse.json({
       status: 500,

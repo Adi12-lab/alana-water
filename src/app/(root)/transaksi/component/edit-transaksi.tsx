@@ -14,6 +14,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -40,7 +41,8 @@ export default function EditTransaksi({
   meta,
   isOpen,
   setIsOpen,
-}: ModalProps<DataModal>) {
+  galon
+}: ModalProps<DataModal> & { galon: number }) {
   const queryClient = useQueryClient();
   const form = useForm<NewTransaksi>({
     resolver: zodResolver(transaksiSchema),
@@ -94,7 +96,13 @@ export default function EditTransaksi({
   }
 
   return (
-    <Dialog open={isOpen && meta.operation === "edit"} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen && meta.operation === "edit"}
+      onOpenChange={() => {
+        setIsOpen(!isOpen);
+        form.reset();
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Transaksi</DialogTitle>
@@ -127,6 +135,7 @@ export default function EditTransaksi({
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />
                   </FormControl>
+                  <FormDescription>Sisa galon = {galon}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

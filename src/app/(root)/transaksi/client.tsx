@@ -41,7 +41,7 @@ import {
 
 import AddTransaski from "./component/add-transaksi";
 import { axiosInstance, formatTanggal, formatRupiah } from "~/lib/utils";
-import { Transaksi } from "~/schema";
+import { JumlahGalon, Transaksi } from "~/schema";
 import { EditDeleteOperation, MetaPagination } from "~/types";
 import DeleteTransaksi from "./component/delete-transaksi";
 import EditTransaksi from "./component/edit-transaksi";
@@ -81,10 +81,18 @@ export default function Transaksi() {
     staleTime: 1000 * 60 * 5,
   });
 
+  const sisaGalon = useQuery<JumlahGalon>({
+    queryKey: ["sisa-galon"],
+    queryFn: async () => {
+      return axiosInstance.get("/api/jumlah-galon").then((data) => data.data);
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
   return (
     <>
       <div className="mb-4">
-        <AddTransaski />
+        <AddTransaski galon={sisaGalon.data?.jumlah as number} />
       </div>
 
       <div className="flex justify-between mb-4">
@@ -200,6 +208,7 @@ export default function Transaksi() {
         isOpen={openModal}
         setIsOpen={setOpenModal}
         meta={dataModal as DataModal}
+        galon={sisaGalon.data?.jumlah as number} 
       />
 
       <DeleteTransaksi

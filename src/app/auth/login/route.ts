@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Password salah" }, { status: 401 });
     }
     const login = jwt.sign({ username }, process.env.SECRET_KEY as string);
-    cookies().set("access_token", login);
+    cookies().set("access_token", login, {sameSite: 'lax'});
     return NextResponse.json({ status: 200, message: "Login berhasil" });
   } catch (err) {
     return NextResponse.json({ status: 500, message: "[POST_LOGIN] " + err });

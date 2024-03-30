@@ -14,6 +14,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -34,7 +35,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "~/lib/utils";
 import { JenisTranksasi } from "@prisma/client";
 
-export default function AddTransaski() {
+export default function AddTransaski({ galon }: { galon: number }) {
   const queryClient = useQueryClient();
   const [openModal, setOpenModal] = useState(false);
   const form = useForm<NewTransaksi>({
@@ -44,8 +45,10 @@ export default function AddTransaski() {
       kuantitas: 0,
       namaPembeli: "",
       tanggal: new Date(),
+      galonKembali: undefined,
     },
   });
+  const [jenisTransaksiId, setJenisTransaksiId] = useState<number>();
 
   const { data = [] } = useQuery<JenisTranksasi[]>({
     queryKey: ["jenis-transaksi"],
@@ -81,7 +84,13 @@ export default function AddTransaski() {
   return (
     <Dialog open={openModal} onOpenChange={setOpenModal}>
       <DialogTrigger asChild>
-        <Button variant={"outline"} onClick={() => setOpenModal(true)}>
+        <Button
+          variant={"outline"}
+          onClick={() => {
+            setOpenModal(true);
+            setJenisTransaksiId(undefined);
+          }}
+        >
           Tambah Transaksi
         </Button>
       </DialogTrigger>
@@ -109,7 +118,7 @@ export default function AddTransaski() {
               name="kuantitas"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Jumlah beli</FormLabel>
+                  <FormLabel>Kuantitas</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -122,6 +131,7 @@ export default function AddTransaski() {
                       }}
                     />
                   </FormControl>
+                  <FormDescription>Sisa galon = {galon}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -133,7 +143,12 @@ export default function AddTransaski() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Jenis Transaksi</FormLabel>
-                  <Select onValueChange={(e) => field.onChange(Number(e))}>
+                  <Select
+                    onValueChange={(e) => {
+                      field.onChange(Number(e));
+                      setJenisTransaksiId(Number(e));
+                    }}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="jenis transaksi" />
@@ -155,6 +170,34 @@ export default function AddTransaski() {
                 </FormItem>
               )}
             />
+
+            {jenisTransaksiId === 3 ? (
+              <FormField
+                control={form.control}
+                name="galonKembali"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Jumlah Galon Kembali</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) => {
+                          const kuantitas = form.getValues('kuantitas');
+                          const galonKembali = Number(e.target.value)
+                          if (galonKembali <= kuantitas) {
+                            return field.onChange(galonKembali);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : (
+              ""
+            )}
 
             <Button type="submit" disabled={transaksiMutation.isPending}>
               {transaksiMutation.isPending ? (

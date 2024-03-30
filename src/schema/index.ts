@@ -27,6 +27,7 @@ export const transaksiSchema = z.object({
   jenisTransaksiId: z
     .number()
     .min(1, { message: "Jenis transaksi diperlukan" }),
+  galonKembali: z.number().optional(),
   kuantitas: z.number().min(1, { message: "Kuantitas diperlukan" }),
 });
 

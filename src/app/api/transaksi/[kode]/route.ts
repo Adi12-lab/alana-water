@@ -55,7 +55,6 @@ export async function PUT(
     const { jenisTransaksiId, kuantitas, namaPembeli, tanggal } = payload;
 
     if (!namaPembeli || !kuantitas || !tanggal || !jenisTransaksiId) {
-      console.log(payload);
       return NextResponse.json(
         { message: "Request tidak valid" },
         { status: 400 }
@@ -125,21 +124,20 @@ export async function PUT(
           jumlah: incrementOrDecrement,
         },
       });
-
-      //update transaksi
-      await prismaInstance.transaksi.update({
-        where: {
-          kode: params.kode,
-        },
-        data: {
-          harga: jenisTransaksi.harga,
-          jenisTransaksiId,
-          kuantitas,
-          namaPembeli,
-          tanggal,
-        },
-      });
     }
+    //update transaksi
+    await prismaInstance.transaksi.update({
+      where: {
+        kode: params.kode,
+      },
+      data: {
+        harga: jenisTransaksi.harga,
+        jenisTransaksiId,
+        kuantitas,
+        namaPembeli,
+        tanggal,
+      },
+    });
     return NextResponse.json(
       { message: "Berhasil di update" },
       { status: 200 }

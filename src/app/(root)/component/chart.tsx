@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import {
@@ -22,6 +22,7 @@ import {
 } from "~/components/ui/select";
 import { bulanIndonesia } from "~/constant";
 import { axiosInstance, formatRupiah } from "~/lib/utils";
+import { Loader2 } from "lucide-react";
 
 export default function Chart() {
   const [year, setYear] = useState(2024);
@@ -30,7 +31,7 @@ export default function Chart() {
     setYear(new Date().getFullYear());
   }, []);
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["pendapatan", year],
     queryFn: async () => {
       const response = await axiosInstance.get(
@@ -39,7 +40,7 @@ export default function Chart() {
       const result = response.data;
       const formatMonth = _.map(bulanIndonesia, (month, index) => ({
         month,
-        monthlyTotal: _.get(result, `payload.${index+1}.monthlyTotal`),
+        monthlyTotal: _.get(result, `payload.${index + 1}.monthlyTotal`),
       }));
 
       return {
@@ -76,31 +77,38 @@ export default function Chart() {
           </div>
         </div>
         <div>
-          <BarChart
-            width={1200}
-            height={300}
-            data={data.months}
-            margin={{
-              top: 30,
-              right: 30,
-              left: 20,
-            }}
-          >
-            <CartesianGrid strokeDasharray="4 4" />
-            <XAxis dataKey="month" fontSize={12} />
-            <YAxis
-              dataKey="monthlyTotal"
-              tickFormatter={(value) => formatRupiah(value)}
-              fontSize={12}
-            />
-            <Tooltip />
-            <Bar
-              dataKey="monthlyTotal"
-              fill="#8884d8"
-              width={20}
-              activeBar={<Rectangle fill="pink" stroke="blue" />}
-            />
-          </BarChart>
+          {isLoading   ? (
+            <div className="flex space-x-4">
+              <Loader2 className="animate-spin" />
+              <span>Merekap penghasilan...</span>
+            </div>
+          ) : (
+            <BarChart
+              width={1200}
+              height={300}
+              data={data?.months}
+              margin={{
+                top: 30,
+                right: 30,
+                left: 20,
+              }}
+            >
+              <CartesianGrid strokeDasharray="4 4" />
+              <XAxis dataKey="month" fontSize={12} />
+              <YAxis
+                dataKey="monthlyTotal"
+                tickFormatter={(value) => formatRupiah(value)}
+                fontSize={12}
+              />
+              <Tooltip />
+              <Bar
+                dataKey="monthlyTotal"
+                fill="#8884d8"
+                width={20}
+                activeBar={<Rectangle fill="pink" stroke="blue" />}
+              />
+            </BarChart>
+          )}
         </div>
       </>
     )

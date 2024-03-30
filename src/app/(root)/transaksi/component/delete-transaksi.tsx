@@ -74,7 +74,7 @@ export default function DeleteTransaksi({
           >
             {transaksiMutation.isPending ? (
               <React.Fragment>
-                <Loader2 />
+                <Loader2 className="animate-spin" />
                 Menghapus
               </React.Fragment>
             ) : (
