@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import _ from "lodash";
-import { bulanIndonesia } from "~/constant";
+import { startOfDay, endOfDay } from "date-fns";
 import { prismaInstance } from "~/lib/prisma";
 export async function GET(req: NextRequest) {
   try {
@@ -9,12 +9,13 @@ export async function GET(req: NextRequest) {
     const tahun = params.get("tahun");
 
     if (tanggal) {
+      const localStartDate = startOfDay(new Date(tanggal));
+      const localEndDate = endOfDay(new Date(tanggal));
+
       const query = {
         tanggal: {
-          gte: new Date(tanggal),
-          lt: new Date(
-            new Date(tanggal).setDate(new Date(tanggal).getDate() + 1)
-          ),
+          gte: localStartDate,
+          lt: localEndDate,
         },
       };
 
@@ -55,7 +56,7 @@ export async function GET(req: NextRequest) {
 
       const groupedByMonth = _.groupBy(withTotal, (transaksi) => {
         const date = new Date(transaksi.tanggal);
-        return `${(date.getMonth() + 1)}`;
+        return `${date.getMonth() + 1}`;
       });
 
       const withMonthlyTotal = _.mapValues(groupedByMonth, (transactions) => {

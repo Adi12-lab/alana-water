@@ -28,6 +28,10 @@ export function formatTanggal(date: Date) {
   return f.format(date);
 }
 
+export function dateUTC(date: Date) {
+  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+}
+
 export function formatRupiah(angka: number) {
   const reverse = angka.toString().split("").reverse().join("");
   const ribuan = reverse.match(/\d{1,3}/g);

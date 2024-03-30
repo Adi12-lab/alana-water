@@ -1,13 +1,15 @@
 "use client";
-import { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { useSearchParams, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 import {
   MoreHorizontal,
   Pencil,
   Trash2,
   Calendar as CalendarIcon,
   Loader2,
+  RefreshCcw,
 } from "lucide-react";
 import { useDebounce } from "~/hooks";
 import { cn } from "~/lib/utils";
@@ -27,6 +29,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
 } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
 import PaginationComponent from "~/components/layout/pagination";
@@ -41,7 +44,7 @@ import {
 
 import AddTransaski from "./component/add-transaksi";
 import { axiosInstance, formatTanggal, formatRupiah } from "~/lib/utils";
-import { JumlahGalon, Transaksi } from "~/schema";
+import { JenisTransaksi, JumlahGalon, Transaksi } from "~/schema";
 import { EditDeleteOperation, MetaPagination } from "~/types";
 import DeleteTransaksi from "./component/delete-transaksi";
 import EditTransaksi from "./component/edit-transaksi";
@@ -55,6 +58,7 @@ export type DataPagination = {
   payload: Transaksi[];
   meta: MetaPagination;
 };
+type Checked = DropdownMenuCheckboxItemProps["checked"];
 
 export default function Transaksi() {
   const searchParams = useSearchParams();
@@ -62,19 +66,24 @@ export default function Transaksi() {
   const page = searchParams.get("page") || "1";
 
   const [tanggal, setTanggal] = useState<Date>();
-  const [pembeli, setPembeli] = useState("");
+  const [query, setQuery] = useState("");
+  const [filterJenis, setFilterJenis] = useState<number[]>([]);
   const [openModal, setOpenModal] = useState(false);
   const [dataModal, setDataModal] = useState<DataModal>();
-  const pembeliDebounce = useDebounce(pembeli, 500);
+  const queryDebounce = useDebounce(query, 500);
 
   const { data, isLoading } = useQuery<DataPagination>({
-    queryKey: ["transaksi", page, pembeliDebounce, tanggal],
+    queryKey: ["transaksi", page, queryDebounce, tanggal, filterJenis],
     queryFn: async () => {
+      let filterStringJenis = "";
+      filterJenis.forEach((val) => {
+        filterStringJenis += `&jenis=${val}`;
+      });
       return axiosInstance
         .get(
-          `/api/transaksi?page=${
-            page ?? 1
-          }&pembeli=${pembeliDebounce}&tanggal=${tanggal || ""}`
+          `/api/transaksi?page=${page ?? 1}&q=${query}&tanggal=${
+            tanggal || ""
+          }${filterStringJenis}`
         )
         .then((data) => data.data);
     },
@@ -86,7 +95,17 @@ export default function Transaksi() {
     queryFn: async () => {
       return axiosInstance.get("/api/jumlah-galon").then((data) => data.data);
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: Infinity,
+  });
+
+  const jenisTransaksi = useQuery<JenisTransaksi[]>({
+    queryKey: ["jenis-transaksi"],
+    queryFn: async () => {
+      return axiosInstance
+        .get("/api/jenis-transaksi")
+        .then((data) => data.data);
+    },
+    staleTime: Infinity,
   });
 
   return (
@@ -99,9 +118,39 @@ export default function Transaksi() {
         <Input
           placeholder="Cari Pembeli"
           className="w-1/3"
-          value={pembeli}
-          onChange={(e) => setPembeli(e.target.value)}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
         />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={filterJenis.length > 0 ? "success" : "outline"}>
+              Jenis Transaksi
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            {jenisTransaksi.data &&
+              jenisTransaksi.data.map((jns) => (
+                <DropdownMenuCheckboxItem
+                  key={jns.id}
+                  checked={filterJenis.indexOf(jns.id) !== -1}
+                  onCheckedChange={() => {
+                    let newFilter: number[];
+                    if (filterJenis.includes(jns.id)) {
+                      // Jika id sudah ada dalam array, kita ingin menghapusnya
+                      newFilter = filterJenis.filter((n) => n !== jns.id);
+                    } else {
+                      // Jika id belum ada dalam array, tambahkan
+                      newFilter = [...filterJenis, jns.id];
+                    }
+                    setFilterJenis(newFilter);
+                  }}
+                >
+                  {jns.nama}
+                </DropdownMenuCheckboxItem>
+              ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -166,6 +215,14 @@ export default function Transaksi() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                       <DropdownMenuSeparator />
+                      {trans.jenisTransaksiId === 3 && (
+                        <DropdownMenuItem className="flex items-center gap-x-3">
+                          <RefreshCcw size={16} color="blue" />
+                          <a href={`/pengembalian?q=${trans.kode}`}>
+                            Pengembalian
+                          </a>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
                         className="flex items-center gap-x-3"
                         onClick={() => {
@@ -208,7 +265,7 @@ export default function Transaksi() {
         isOpen={openModal}
         setIsOpen={setOpenModal}
         meta={dataModal as DataModal}
-        galon={sisaGalon.data?.jumlah as number} 
+        galon={sisaGalon.data?.jumlah as number}
       />
 
       <DeleteTransaksi

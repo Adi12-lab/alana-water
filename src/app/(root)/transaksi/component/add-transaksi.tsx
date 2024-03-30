@@ -45,7 +45,7 @@ export default function AddTransaski({ galon }: { galon: number }) {
       kuantitas: 0,
       namaPembeli: "",
       tanggal: new Date(),
-      galonKembali: undefined,
+      galonKembali: 0,
     },
   });
   const [jenisTransaksiId, setJenisTransaksiId] = useState<number>();
@@ -71,6 +71,7 @@ export default function AddTransaski({ galon }: { galon: number }) {
       toast.success("Transaksi berhasil ditambahkan");
       setOpenModal(false);
       queryClient.invalidateQueries({ queryKey: ["transaksi"] });
+      queryClient.invalidateQueries({ queryKey: ["pengembalian"] });
     },
     onError: () => {
       toast.error("Transaksi gagal ditambahkan");

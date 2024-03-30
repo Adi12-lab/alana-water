@@ -27,7 +27,7 @@ export const transaksiSchema = z.object({
   jenisTransaksiId: z
     .number()
     .min(1, { message: "Jenis transaksi diperlukan" }),
-  galonKembali: z.number().optional(),
+  galonKembali: z.number({required_error: "Tidak valid"}),
   kuantitas: z.number().min(1, { message: "Kuantitas diperlukan" }),
 });
 

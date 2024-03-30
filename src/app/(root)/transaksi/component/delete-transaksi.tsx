@@ -37,6 +37,9 @@ export default function DeleteTransaksi({
       queryClient.invalidateQueries({
         queryKey: ["transaksi"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["pengembalian"],
+      });
     },
   });
 

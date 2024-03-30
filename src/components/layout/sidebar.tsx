@@ -100,6 +100,13 @@ function Sidebar({ toggled, setToggled, setBroken }: SidebarProps) {
           Jumlah Galon
         </MenuItem>
         <MenuItem
+          component={<Link href="/pengembalian" />}
+          icon={<List size={20} />}
+          active={pathname === "/pengembalian"}
+        >
+          Pengembalian
+        </MenuItem>
+        <MenuItem
           component={<Link href="/jenis-transaksi" />}
           icon={<List size={20} />}
           active={pathname === "/jenis-transaksi"}

@@ -1,5 +1,7 @@
 import { Prisma } from "@prisma/client";
+import _ from "lodash";
 import { NextRequest, NextResponse } from "next/server";
+import { startOfDay, endOfDay } from "date-fns";
 import { prismaInstance, prismaPaginate } from "~/lib/prisma";
 import { NewTransaksi } from "~/schema";
 
@@ -45,8 +47,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (findJenisTransaksi.id !== 3 && sisaGalon.jumlah > 0) {
-      //jika jenis transaksi bukan pinjam dan sisa galon lebih dari 0, maka kurangi galon
+    if (findJenisTransaksi.id !== 1 && sisaGalon.jumlah > 0) {
+      //jika jenis transaksi bukan isi ulang dan sisa galon lebih dari 0, maka kurangi galon
       await prismaInstance.galonTersisa.update({
         where: {
           id: 1,
@@ -82,25 +84,40 @@ export async function GET(req: NextRequest) {
   try {
     const params = req.nextUrl.searchParams;
     const page = parseInt(params.get("page") as string);
-    const pembeli = params.get("pembeli");
+    const kodeOrPembeli = params.get("q");
     const tanggal = params.get("tanggal");
+    const jenis = params.getAll("jenis");
+    const jenisNumber = _.map(jenis, Number);
 
     const whereQuery: Prisma.TransaksiWhereInput = {
-      namaPembeli: {
-        contains: pembeli || undefined,
-        mode: "insensitive",
-      },
-      AND: {
-        tanggal: tanggal
-          ? {
-              gte: new Date(tanggal),
-              lt: new Date(
-                new Date(tanggal).setDate(new Date(tanggal).getDate() + 1)
-              ),
-            }
-          : {},
-      },
+      ...(jenisNumber.length > 0 && {
+        jenisTransaksiId: {
+          in: jenisNumber,
+        },
+      }),
+      ...(tanggal && {
+        tanggal: {
+          gte: startOfDay(new Date(tanggal)),
+          lt: endOfDay(new Date(tanggal)),
+        },
+      }),
     };
+    // Hanya tambahkan kondisi OR jika kodeOrPembeli ada
+    if (kodeOrPembeli) {
+      whereQuery.OR = [
+        {
+          namaPembeli: {
+            contains: kodeOrPembeli,
+            mode: "insensitive",
+          },
+        },
+        {
+          kode: {
+            equals: kodeOrPembeli,
+          },
+        },
+      ];
+    }
 
     const [result, meta] = await prismaPaginate.transaksi
       .paginate({
@@ -124,9 +141,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ payload, meta: { ...meta } });
   } catch (err) {
-    return NextResponse.json({
-      status: 500,
-      message: "[GET_TRASAKSASI] " + err,
-    });
+    return NextResponse.json(
+      {
+        message: "[GET_TRASAKSASI] " + err,
+      },
+      { status: 500 }
+    );
   }
 }

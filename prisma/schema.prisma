@@ -35,7 +35,7 @@ model Transaksi {
   namaPembeli      String         @map("nama_pembeli") @db.VarChar(255)
   tanggal          DateTime
   kuantitas        Int
-  galonKembali     Int?
+  galonKembali     Int            @default(0)
   jenisTransaksiId Int
   jenisTransaksi   JenisTranksasi @relation(fields: [jenisTransaksiId], references: [id])
   harga            Int
