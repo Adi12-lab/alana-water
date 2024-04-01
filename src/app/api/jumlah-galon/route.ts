@@ -5,7 +5,7 @@ import { JumlahGalon } from "~/schema";
 export async function PUT(req: NextRequest) {
   try {
     const payload: JumlahGalon = await req.json();
-    const {jumlah} = payload;
+    const { jumlah } = payload;
 
     const result = await prismaInstance.galonTersisa.update({
       where: {
@@ -17,10 +17,12 @@ export async function PUT(req: NextRequest) {
     });
     return NextResponse.json(result);
   } catch (err) {
-    return NextResponse.json({
-      status: 500,
-      message: "[PUT_JUMLAH_GALON] " + err,
-    }, {status: 500});
+    return NextResponse.json(
+      {
+        message: "[PUT_JUMLAH_GALON] " + err,
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -33,9 +35,11 @@ export async function GET() {
     });
     return NextResponse.json(result);
   } catch (err) {
-    return NextResponse.json({
-      status: 500,
-      message: "[GET_JUMLAH_GALON] " + err,
-    });
+    return NextResponse.json(
+      {
+        message: "[GET_JUMLAH_GALON] " + err,
+      },
+      { status: 500 }
+    );
   }
 }

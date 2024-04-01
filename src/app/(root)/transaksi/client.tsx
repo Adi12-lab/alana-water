@@ -1,8 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import { useSearchParams, usePathname } from "next/navigation";
+import React, { useState, useEffect, ChangeEvent} from "react";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 import {
   MoreHorizontal,
   Pencil,
@@ -58,19 +57,26 @@ export type DataPagination = {
   payload: Transaksi[];
   meta: MetaPagination;
 };
-type Checked = DropdownMenuCheckboxItemProps["checked"];
 
 export default function Transaksi() {
   const searchParams = useSearchParams();
   const path = usePathname();
+  const router = useRouter();
   const page = searchParams.get("page") || "1";
+  const query = searchParams.get("q") || "";
 
+  const [queryString, setQueryString] = useState("");
+  const queryDebounce = useDebounce(query, 500);
   const [tanggal, setTanggal] = useState<Date>();
-  const [query, setQuery] = useState("");
   const [filterJenis, setFilterJenis] = useState<number[]>([]);
   const [openModal, setOpenModal] = useState(false);
   const [dataModal, setDataModal] = useState<DataModal>();
-  const queryDebounce = useDebounce(query, 500);
+
+  useEffect(() => {
+    if (!!query) {
+      setQueryString(query);
+    }
+  }, [query]);
 
   const { data, isLoading } = useQuery<DataPagination>({
     queryKey: ["transaksi", page, queryDebounce, tanggal, filterJenis],
@@ -91,7 +97,7 @@ export default function Transaksi() {
   });
 
   const sisaGalon = useQuery<JumlahGalon>({
-    queryKey: ["sisa-galon"],
+    queryKey: ["jumlah-galon"],
     queryFn: async () => {
       return axiosInstance.get("/api/jumlah-galon").then((data) => data.data);
     },
@@ -108,6 +114,16 @@ export default function Transaksi() {
     staleTime: Infinity,
   });
 
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+    setQueryString(value);
+    const params = new URLSearchParams();
+    params.set("q", value);
+    const queryString = params.toString();
+    const updatedPath = queryString ? `${path}?${queryString}` : path;
+    router.replace(updatedPath);
+  };
+
   return (
     <>
       <div className="mb-4">
@@ -116,10 +132,10 @@ export default function Transaksi() {
 
       <div className="flex justify-between mb-4">
         <Input
-          placeholder="Cari Pembeli"
+          placeholder="Cari Pembeli atau Kode"
           className="w-1/3"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          value={queryString}
+          onChange={handleSearchChange}
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

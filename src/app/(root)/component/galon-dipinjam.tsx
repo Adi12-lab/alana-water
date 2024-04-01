@@ -5,23 +5,23 @@ import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "~/lib/utils";
 import { JumlahGalon } from "~/schema";
 
-export default function JumlahGalon() {
-  const { data, isLoading } = useQuery<JumlahGalon>({
-    queryKey: ["jumlah-galon"],
+export default function GalonDipinjam() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["galon-dipinjam"],
     queryFn: async () => {
-      return axiosInstance.get("/api/jumlah-galon").then((data) => data.data);
+      return axiosInstance.get("/api/jumlah-galon/dipinjam").then((data) => data.data);
     },
   });
   return (
     <Card className="shadow-md rounded-2xl w-[300px] p-5">
       <div className="flex justify-between">
-        <CardTitle className="text-sm font-normal">Ketersediaan Galon</CardTitle>
+        <CardTitle className="text-sm font-normal">Galon Dipinjam</CardTitle>
         <Milk />
       </div>
       <CardContent className="p-0">
-        <h3 className="font-bold text-3xl">
+        <h3 className="font-bold text-3xl text-red-400">
           {
-            isLoading && !data ? (<Loader2 className="animate-spin" />) : data?.jumlah
+            isLoading && !data ? (<Loader2 className="animate-spin" />) : data
           }
         </h3>
       </CardContent>

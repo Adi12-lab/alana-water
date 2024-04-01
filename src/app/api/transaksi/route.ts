@@ -73,10 +73,11 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(result);
   } catch (err) {
-    return NextResponse.json({
-      status: 500,
-      message: "[POST_TRASAKSASI] " + err,
-    });
+    console.log("[POST_TRANSAKSI]" + err);
+    return NextResponse.json(
+      {},
+      { status: 500, statusText: "Terjadi kesalahan" }
+    );
   }
 }
 
@@ -141,11 +142,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ payload, meta: { ...meta } });
   } catch (err) {
+    console.log("[GET_TRANSAKSII] " + err);
     return NextResponse.json(
-      {
-        message: "[GET_TRASAKSASI] " + err,
-      },
-      { status: 500 }
+      {},
+      { status: 500, statusText: "Terjadi kesalahan" }
     );
   }
 }

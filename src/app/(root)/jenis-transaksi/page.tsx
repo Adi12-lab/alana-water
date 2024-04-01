@@ -14,9 +14,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { axiosInstance, formatRupiah } from "~/lib/utils";
 import { JenisTransaksi } from "~/schema";
-import { Pencil, Trash2 } from "lucide-react";
-import AddJenis from "./component/add-jenis";
-import DeleteJenis from "./component/delete-jenis";
+import { Calculator } from "lucide-react";
 import EditJenis from "./component/edit-jenis";
 import { EditDeleteOperation } from "~/types";
 
@@ -46,9 +44,6 @@ export default function Page() {
   return (
     <>
       <h1 className="font-bold text-xl">Jenis Transaksi</h1>
-      <div className="float-end">
-        <AddJenis />
-      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -75,20 +70,7 @@ export default function Page() {
                       setOpenModal(true);
                     }}
                   >
-                    <Pencil />
-                  </Button>
-                  <Button
-                    variant={"destructive"}
-                    size={"icon"}
-                    onClick={() => {
-                      setDataModal({
-                        data: jns,
-                        operation: "delete",
-                      });
-                      setOpenModal(true);
-                    }}
-                  >
-                    <Trash2 />
+                    <Calculator />
                   </Button>
                 </TableCell>
               </TableRow>
@@ -97,12 +79,6 @@ export default function Page() {
       </Table>
 
       <EditJenis
-        isOpen={openModal}
-        setIsOpen={setOpenModal}
-        meta={dataModal as DataModal}
-      />
-
-      <DeleteJenis
         isOpen={openModal}
         setIsOpen={setOpenModal}
         meta={dataModal as DataModal}

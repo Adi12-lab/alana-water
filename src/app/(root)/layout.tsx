@@ -17,13 +17,13 @@ export default function UserLayout({
 
   return (
     <>
-      <main className="flex h-screen overflow-y-scroll">
+      <main className="flex h-screen">
         <Sidebar
           setBroken={setBroken}
           setToggled={setToggled}
           toggled={toggled}
         />
-        <section className="w-full mt-4 container">
+        <section className="w-full mt-4 container overflow-y-scroll">
           {children}
         </section>
       </main>

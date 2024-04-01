@@ -88,6 +88,7 @@ export default function EditJenis({
                   <FormControl>
                     <Input
                       {...field}
+                      disabled
                       onChange={(e) =>
                         field.onChange(e.target.value.toUpperCase())
                       }
@@ -105,9 +106,13 @@ export default function EditJenis({
                   <FormLabel>Harga</FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
                       {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (val >= 0) {
+                          field.onChange(val);
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormDescription>

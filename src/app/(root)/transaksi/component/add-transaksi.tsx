@@ -48,7 +48,6 @@ export default function AddTransaski({ galon }: { galon: number }) {
       galonKembali: 0,
     },
   });
-  const [jenisTransaksiId, setJenisTransaksiId] = useState<number>();
 
   const { data = [] } = useQuery<JenisTranksasi[]>({
     queryKey: ["jenis-transaksi"],
@@ -85,15 +84,7 @@ export default function AddTransaski({ galon }: { galon: number }) {
   return (
     <Dialog open={openModal} onOpenChange={setOpenModal}>
       <DialogTrigger asChild>
-        <Button
-          variant={"outline"}
-          onClick={() => {
-            setOpenModal(true);
-            setJenisTransaksiId(undefined);
-          }}
-        >
-          Tambah Transaksi
-        </Button>
+        <Button variant={"outline"}>Tambah Transaksi</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -147,7 +138,6 @@ export default function AddTransaski({ galon }: { galon: number }) {
                   <Select
                     onValueChange={(e) => {
                       field.onChange(Number(e));
-                      setJenisTransaksiId(Number(e));
                     }}
                   >
                     <FormControl>
@@ -171,34 +161,6 @@ export default function AddTransaski({ galon }: { galon: number }) {
                 </FormItem>
               )}
             />
-
-            {jenisTransaksiId === 3 ? (
-              <FormField
-                control={form.control}
-                name="galonKembali"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Jumlah Galon Kembali</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                        onChange={(e) => {
-                          const kuantitas = form.getValues('kuantitas');
-                          const galonKembali = Number(e.target.value)
-                          if (galonKembali <= kuantitas) {
-                            return field.onChange(galonKembali);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            ) : (
-              ""
-            )}
 
             <Button type="submit" disabled={transaksiMutation.isPending}>
               {transaksiMutation.isPending ? (

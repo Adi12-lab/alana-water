@@ -9,6 +9,7 @@ import {
   Trash2,
   Calendar as CalendarIcon,
   Loader2,
+  Folder,
 } from "lucide-react";
 
 import { cn } from "~/lib/utils";
@@ -22,8 +23,18 @@ import {
 } from "~/components/ui/table";
 
 import { Button } from "~/components/ui/button";
+import { Anchor } from "~/components/ui/anchor";
 import { Input } from "~/components/ui/input";
 import { Calendar } from "~/components/ui/calendar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+} from "~/components/ui/dropdown-menu";
 import {
   Popover,
   PopoverContent,
@@ -31,8 +42,10 @@ import {
 } from "~/components/ui/popover";
 import { Badge } from "~/components/ui/badge";
 import { useDebounce } from "~/hooks";
-import { axiosInstance, formatTanggal, formatRupiah } from "~/lib/utils";
-import { DataModal, DataPagination } from "../transaksi/client";
+import { axiosInstance, formatTanggal } from "~/lib/utils";
+import { DataPagination, DataModal } from "../transaksi/client";
+import EditPengembalian from "./component/edit-pengembalian";
+import PaginationComponent from "~/components/layout/pagination";
 
 export default function Pengembalian() {
   const searchParams = useSearchParams();
@@ -41,23 +54,24 @@ export default function Pengembalian() {
   const page = searchParams.get("page") || "1";
   const query = searchParams.get("q") || "";
   const [tanggal, setTanggal] = useState<Date>();
-  const queryDebounce = useDebounce(query);
-
   const [queryString, setQueryString] = useState("");
-
+  const queryDebounce = useDebounce(query);
+  const [status, setStatus] = useState<number>();
+  const [openModal, setOpenModal] = useState(false);
+  const [dataModal, setDataModal] = useState<DataModal>();
   useEffect(() => {
     if (!!query) {
       setQueryString(query);
     }
   }, [query]);
   const { data, isLoading } = useQuery<DataPagination>({
-    queryKey: ["pengembalian", page, queryDebounce, tanggal],
+    queryKey: ["pengembalian", page, queryDebounce, tanggal, status],
     queryFn: async () => {
       return axiosInstance
         .get(
-          `/api/transaksi?page=${page ?? 1}&q=${query}&jenis=${3}&tanggal=${
-            tanggal || ""
-          }`
+          `/api/pengembalian?page=${
+            page ?? 1
+          }&q=${query}&status=${status}&tanggal=${tanggal || ""}`
         )
         .then((data) => data.data);
     },
@@ -78,11 +92,40 @@ export default function Pengembalian() {
     <>
       <div className="flex justify-between mb-4">
         <Input
-          placeholder="Kode Transaksi"
+          placeholder="Cari Pembeli atau Kode"
           className="w-1/3"
           value={queryString}
           onChange={handleSearchChange}
         />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={"outline"}>
+              {status === 1
+                ? "LUNAS"
+                : status === -1
+                ? "BELUM LUNAS"
+                : "Jenis Transaksi"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuCheckboxItem
+              checked={status === 1}
+              onCheckedChange={() =>
+                status === 1 ? setStatus(0) : setStatus(1)
+              }
+            >
+              LUNAS
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={status === -1}
+              onCheckedChange={() =>
+                status === -1 ? setStatus(0) : setStatus(-1)
+              }
+            >
+              BELUM LUNAS
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -114,6 +157,7 @@ export default function Pengembalian() {
             <TableHead>Jumlah Pinjam</TableHead>
             <TableHead>Jumlah Kembali</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Aksi</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -140,17 +184,48 @@ export default function Pengembalian() {
                         ? "default"
                         : "destructive"
                     }
+                    
                   >
                     {trans.kuantitas - trans.galonKembali === 0
                       ? "LUNAS"
                       : "BELUM LUNAS"}
                   </Badge>
                 </TableCell>
+                <TableCell className="space-x-4">
+                  <Button
+                    variant={"warning"}
+                    size={"icon"}
+                    onClick={() => {
+                      setDataModal({
+                        data: trans,
+                        operation: "edit",
+                      });
+                      setOpenModal(true);
+                    }}
+                  >
+                    <Pencil />
+                  </Button>
+                  <Anchor
+                    href={`/transaksi/?q=${trans.kode}`}
+                    variant={"secondary"}
+                    size={"icon"}
+                  >
+                    <Folder />
+                  </Anchor>
+                </TableCell>
               </TableRow>
             ))
           )}
         </TableBody>
       </Table>
+      <div className="mt-4">
+        {data && <PaginationComponent data={data.meta} path={path} />}
+      </div>
+      <EditPengembalian
+        isOpen={openModal}
+        setIsOpen={setOpenModal}
+        meta={dataModal as DataModal}
+      />
     </>
   );
 }

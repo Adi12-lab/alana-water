@@ -17,6 +17,7 @@ import { DataModal } from "../client";
 import { ModalProps } from "~/types";
 import { Transaksi } from "~/schema";
 import { axiosInstance } from "~/lib/utils";
+import { AxiosError } from "axios";
 
 export default function DeleteTransaksi({
   meta,
@@ -40,6 +41,11 @@ export default function DeleteTransaksi({
       queryClient.invalidateQueries({
         queryKey: ["pengembalian"],
       });
+    },
+    onError: (payload: AxiosError) => {
+      if(payload.response) {
+        toast.error(payload.response.statusText)
+      }
     },
   });
 

@@ -41,7 +41,7 @@ export default function EditTransaksi({
   meta,
   isOpen,
   setIsOpen,
-  galon
+  galon,
 }: ModalProps<DataModal> & { galon: number }) {
   const queryClient = useQueryClient();
   const form = useForm<NewTransaksi>({
@@ -61,6 +61,7 @@ export default function EditTransaksi({
       form.setValue("kuantitas", meta.data.kuantitas);
       form.setValue("namaPembeli", meta.data.namaPembeli);
       form.setValue("tanggal", new Date(meta.data.tanggal));
+      form.setValue("galonKembali", meta.data.galonKembali);
     }
   }, [form.formState.errors, meta]);
 
@@ -127,7 +128,7 @@ export default function EditTransaksi({
               name="kuantitas"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Jumlah beli</FormLabel>
+                  <FormLabel>Kuantitas</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -148,6 +149,7 @@ export default function EditTransaksi({
                 <FormItem>
                   <FormLabel>Jenis Transaksi</FormLabel>
                   <Select
+                    disabled
                     value={field.value.toString()}
                     onValueChange={(e) => field.onChange(Number(e))}
                   >
@@ -168,6 +170,10 @@ export default function EditTransaksi({
                         ))}
                     </SelectContent>
                   </Select>
+                  <FormDescription>
+                    Untuk mengedit transaksi harus menghapus terlebih dahulu
+                    transaksi ini
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

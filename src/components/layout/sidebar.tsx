@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Sidebar as SidebarComponent, Menu, MenuItem } from "react-pro-sidebar";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { GripVertical, Warehouse, GanttChartSquare, Power, Milk, List } from "lucide-react";
+import { GripVertical, Warehouse, GanttChartSquare, Power, Milk, List, RefreshCcw } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 
 import { axiosInstance, rgbToHex } from "~/lib/utils";
@@ -97,14 +97,14 @@ function Sidebar({ toggled, setToggled, setBroken }: SidebarProps) {
           icon={<Milk size={20} />}
           active={pathname === "/jumlah-galon"}
         >
-          Jumlah Galon
+          Ketersediaan Galon
         </MenuItem>
         <MenuItem
           component={<Link href="/pengembalian" />}
-          icon={<List size={20} />}
+          icon={<RefreshCcw size={20} />}
           active={pathname === "/pengembalian"}
         >
-          Pengembalian
+          Pengembalian Galon
         </MenuItem>
         <MenuItem
           component={<Link href="/jenis-transaksi" />}
