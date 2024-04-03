@@ -10,7 +10,7 @@ export async function PUT(
     const payload: PengembalianGalon = await req.json();
     const { kembali } = payload;
 
-    if (!kembali) {
+    if (typeof kembali !== 'number') {
       return NextResponse.json(
         { message: "Request tidak valid" },
         { status: 400 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, ChangeEvent, Suspense} from "react";
+import React, { useState, ChangeEvent } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -10,7 +10,7 @@ import {
   Loader2,
   RefreshCcw,
 } from "lucide-react";
-import { useDebounce } from "~/hooks";
+import { useDebouncedCallback } from "use-debounce";
 import { cn } from "~/lib/utils";
 
 import {
@@ -43,7 +43,11 @@ import {
 
 import AddTransaski from "./component/add-transaksi";
 import { axiosInstance, formatTanggal, formatRupiah } from "~/lib/utils";
-import { JenisTransaksi, JumlahGalon, Transaksi as TransaksiType } from "~/schema";
+import {
+  JenisTransaksi,
+  JumlahGalon,
+  Transaksi as TransaksiType,
+} from "~/schema";
 import { EditDeleteOperation, MetaPagination } from "~/types";
 import DeleteTransaksi from "./component/delete-transaksi";
 import EditTransaksi from "./component/edit-transaksi";
@@ -65,21 +69,14 @@ export default function Transaksi() {
   const page = searchParams.get("page") || "1";
   const query = searchParams.get("q") || "";
 
-  const [queryString, setQueryString] = useState("");
-  const queryDebounce = useDebounce(query, 500);
   const [tanggal, setTanggal] = useState<Date>();
   const [filterJenis, setFilterJenis] = useState<number[]>([]);
   const [openModal, setOpenModal] = useState(false);
   const [dataModal, setDataModal] = useState<DataModal>();
 
-  useEffect(() => {
-    if (!!query) {
-      setQueryString(query);
-    }
-  }, [query]);
 
   const { data, isLoading } = useQuery<DataPagination>({
-    queryKey: ["transaksi", page, queryDebounce, tanggal, filterJenis],
+    queryKey: ["transaksi", page, query, tanggal, filterJenis],
     queryFn: async () => {
       let filterStringJenis = "";
       filterJenis.forEach((val) => {
@@ -114,15 +111,17 @@ export default function Transaksi() {
     staleTime: Infinity,
   });
 
-  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setQueryString(value);
-    const params = new URLSearchParams();
-    params.set("q", value);
-    const queryString = params.toString();
-    const updatedPath = queryString ? `${path}?${queryString}` : path;
-    router.replace(updatedPath);
-  };
+  const handleSearchChange = useDebouncedCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const { value } = event.target;
+      const params = new URLSearchParams();
+      params.set("q", value);
+      const queryString = params.toString();
+      const updatedPath = queryString ? `${path}?${queryString}` : path;
+      router.replace(updatedPath);
+    },
+    400
+  );
 
   return (
     <>
@@ -135,8 +134,10 @@ export default function Transaksi() {
         <Input
           placeholder="Cari Pembeli atau Kode"
           className="w-1/3"
-          value={queryString}
-          onChange={handleSearchChange}
+          onChange={(e) => {
+            handleSearchChange(e);
+          }}
+          defaultValue={query}
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

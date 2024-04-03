@@ -1,5 +1,5 @@
 "use client";
-import { ChangeEvent, Suspense, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
@@ -36,7 +36,6 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { Badge } from "~/components/ui/badge";
-import { useDebounce } from "~/hooks";
 import { axiosInstance, formatTanggal } from "~/lib/utils";
 import EditPengembalian from "./component/edit-pengembalian";
 import PaginationComponent from "~/components/layout/pagination";
@@ -45,6 +44,7 @@ import {
   Transaksi,
 } from "~/schema";
 import { MetaPagination } from "~/types";
+import { useDebouncedCallback, useDebounce } from "use-debounce";
 
 export type TransaksiAndPengembalian = Transaksi & {
   pengembalianGalon: PengembalianGalonType;
@@ -67,18 +67,12 @@ export default function PengembalianGalon() {
   const page = searchParams.get("page") || "1";
   const query = searchParams.get("q") || "";
   const [tanggal, setTanggal] = useState<Date>();
-  const [queryString, setQueryString] = useState("");
-  const queryDebounce = useDebounce(query);
   const [status, setStatus] = useState<number>();
   const [openModal, setOpenModal] = useState(false);
   const [dataModal, setDataModal] = useState<DataModal>();
-  useEffect(() => {
-    if (!!query) {
-      setQueryString(query);
-    }
-  }, [query]);
+
   const { data, isLoading } = useQuery<DataPagination>({
-    queryKey: ["pengembalian", page, queryDebounce, tanggal, status],
+    queryKey: ["pengembalian", page, query, tanggal, status],
     queryFn: async () => {
       return axiosInstance
         .get(
@@ -91,15 +85,17 @@ export default function PengembalianGalon() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setQueryString(value);
-    const params = new URLSearchParams();
-    params.set("q", value);
-    const queryString = params.toString();
-    const updatedPath = queryString ? `${path}?${queryString}` : path;
-    router.replace(updatedPath);
-  };
+  const handleSearchChange = useDebouncedCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const { value } = event.target;
+      const params = new URLSearchParams();
+      params.set("q", value);
+      const queryString = params.toString();
+      const updatedPath = queryString ? `${path}?${queryString}` : path;
+      router.replace(updatedPath);
+    },
+    300
+  );
 
   return (
     <>
@@ -108,8 +104,8 @@ export default function PengembalianGalon() {
         <Input
           placeholder="Cari Pembeli atau Kode"
           className="w-1/3"
-          value={queryString}
           onChange={handleSearchChange}
+          defaultValue={query}
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
