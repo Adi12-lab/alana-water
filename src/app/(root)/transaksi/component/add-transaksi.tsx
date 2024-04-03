@@ -45,7 +45,6 @@ export default function AddTransaski({ galon }: { galon: number }) {
       kuantitas: 0,
       namaPembeli: "",
       tanggal: new Date(),
-      galonKembali: 0,
     },
   });
 
@@ -97,7 +96,7 @@ export default function AddTransaski({ galon }: { galon: number }) {
               name="namaPembeli"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Pembeli</FormLabel>
+                  <FormLabel>Nama Pelanggan</FormLabel>
                   <FormControl>
                     <Input placeholder="siswanto" {...field} />
                   </FormControl>

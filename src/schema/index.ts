@@ -27,7 +27,6 @@ export const transaksiSchema = z.object({
   jenisTransaksiId: z
     .number()
     .min(1, { message: "Jenis transaksi diperlukan" }),
-  galonKembali: z.number({required_error: "Tidak valid"}),
   kuantitas: z.number().min(1, { message: "Kuantitas diperlukan" }),
 });
 
@@ -37,6 +36,17 @@ export type Transaksi = NewTransaksi & {
   harga: number;
   total: number;
   jenisTransaksi: JenisTransaksi;
+};
+
+export const pengembalianGalonSchema = z.object({
+  kodeTransaksi: z.string().min(1, { message: "Kode transaksi harus ada" }),
+  pinjam: z.number(),
+  kembali: z.number(),
+  isLunas: z.boolean(),
+});
+
+export type PengembalianGalon = z.infer<typeof pengembalianGalonSchema> & {
+  id: number;
 };
 
 export const jumlahGalonSchema = z.object({

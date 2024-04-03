@@ -4,19 +4,16 @@ import _ from "lodash";
 
 export async function GET(req: NextRequest) {
   try {
-    const result = await prismaInstance.transaksi.findMany({
-      where: {
-        jenisTransaksiId: 3,
-      },
+    const result = await prismaInstance.pengembalianGalon.findMany({
       select: {
-        kuantitas: true,
-        galonKembali: true,
+        pinjam: true,
+        kembali: true,
       },
     });
 
     const jumlah_dipinjam =
-      _.sumBy(result, (trans) => trans.kuantitas) -
-      _.sumBy(result, (trans) => trans.galonKembali);
+      _.sumBy(result, (trans) => trans.pinjam) -
+      _.sumBy(result, (trans) => trans.kembali);
 
     return NextResponse.json(jumlah_dipinjam);
   } catch (err) {

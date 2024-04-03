@@ -1,32 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { PengembalianGalon, Prisma } from "@prisma/client";
 import { prismaInstance } from "~/lib/prisma";
-import { Transaksi } from "~/schema";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { kode: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const payload: Transaksi = await req.json();
-    const { galonKembali } = payload;
+    const payload: PengembalianGalon = await req.json();
+    const { kembali } = payload;
 
-    if (!galonKembali) {
+    if (!kembali) {
       return NextResponse.json(
         { message: "Request tidak valid" },
         { status: 400 }
       );
     }
 
-    const trans = await prismaInstance.transaksi.findUnique({
+    const pengembalian = await prismaInstance.pengembalianGalon.findUnique({
       where: {
-        kode: params.kode,
+        id: Number(params.id),
       },
     });
 
-    if (!trans) {
+    if (!pengembalian) {
       return NextResponse.json(
-        { message: "Transaksi tidak ditemukan" },
+        { message: "Pengembalian tidak ditemukan" },
         { status: 400 }
       );
     }
@@ -37,7 +36,7 @@ export async function PUT(
       },
     });
 
-    const selisihGalonKembali = Math.abs(galonKembali - trans.galonKembali);
+    const selisihGalonKembali = Math.abs(kembali - pengembalian.kembali);
     const incrementOrDecrement: Prisma.IntFieldUpdateOperationsInput = {
       increment: undefined,
       decrement: undefined,
@@ -48,17 +47,17 @@ export async function PUT(
     }
 
     // jika selisih lebih besar dari sisa galon, maka invalid
-    if (selisihGalonKembali > trans.kuantitas || selisihGalonKembali < 0) {
+    if (selisihGalonKembali > pengembalian.pinjam || selisihGalonKembali < 0) {
       return NextResponse.json(
         { message: "Galon kembali tidak valid" },
         { status: 405 }
       );
     }
     //jika galonKembali baru yang lebih besar dari galonKembali lama, maka galon increment (galonKembali baru - lama)
-    if (galonKembali > trans.galonKembali) {
+    if (kembali > pengembalian.kembali) {
       incrementOrDecrement.increment = selisihGalonKembali;
       // jika galonKembali baru lebih kecil dari galonKembali lama, maka galon increment (galonKembali baru - lama)
-    } else if (galonKembali < trans.galonKembali) {
+    } else if (kembali < pengembalian.kembali) {
       incrementOrDecrement.decrement = selisihGalonKembali;
     }
 
@@ -72,13 +71,14 @@ export async function PUT(
         },
       });
     }
-    //update transaksi
-    await prismaInstance.transaksi.update({
+
+    await prismaInstance.pengembalianGalon.update({
       where: {
-        kode: params.kode,
+        id: Number(params.id),
       },
       data: {
-        galonKembali,
+        kembali,
+        isLunas: pengembalian.pinjam === kembali,
       },
     });
     return NextResponse.json(
@@ -86,9 +86,9 @@ export async function PUT(
       { status: 200 }
     );
   } catch (error) {
-    console.log("[PUT_PENGEMBALIAN] " + error )
+    console.log("[PUT_PENGEMBALIAN] " + error);
     return NextResponse.json(
-      { },
+      {},
       { status: 500, statusText: "Terjadi kesalahan" }
     );
   }

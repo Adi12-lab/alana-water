@@ -55,13 +55,11 @@ export default function EditTransaksi({
   });
 
   useEffect(() => {
-    console.log(form.formState.errors);
     if (meta && meta.data) {
       form.setValue("jenisTransaksiId", meta.data.jenisTransaksiId);
       form.setValue("kuantitas", meta.data.kuantitas);
       form.setValue("namaPembeli", meta.data.namaPembeli);
       form.setValue("tanggal", new Date(meta.data.tanggal));
-      form.setValue("galonKembali", meta.data.galonKembali);
     }
   }, [form.formState.errors, meta]);
 
@@ -115,7 +113,7 @@ export default function EditTransaksi({
               name="namaPembeli"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Pembeli</FormLabel>
+                  <FormLabel>Nama Pelanggan</FormLabel>
                   <FormControl>
                     <Input placeholder="siswanto" {...field} />
                   </FormControl>
@@ -132,11 +130,15 @@ export default function EditTransaksi({
                   <FormControl>
                     <Input
                       type="number"
+                      disabled={meta.data.jenisTransaksiId === 3}
                       {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />
                   </FormControl>
                   <FormDescription>Sisa galon = {galon}</FormDescription>
+                  <FormDescription>
+                    Kuantitas pinjam tidak bisa diedit
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

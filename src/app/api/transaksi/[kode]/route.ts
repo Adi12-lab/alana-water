@@ -11,6 +11,9 @@ export async function DELETE(
       where: {
         kode: params.kode,
       },
+      include: {
+        pengembalianGalon: true,
+      },
     });
     if (!trans) {
       return NextResponse.json(
@@ -23,23 +26,26 @@ export async function DELETE(
       increment: 0,
     };
 
-    if (
-      trans.jenisTransaksiId === 3 &&
-      trans.galonKembali !== trans.kuantitas
-    ) {
-      return NextResponse.json(
-        {},
-        { status: 400, statusText: "Transaksi pinjam harus dikembalikan semua" }
-      );
-    } else if (
-      (trans.jenisTransaksiId === 3 &&
-        trans.galonKembali === trans.kuantitas) ||
-      trans.jenisTransaksiId === 1
-    ) {
+    if (trans.jenisTransaksiId === 3) {
+      if (
+        trans.pengembalianGalon?.pinjam !== trans.pengembalianGalon?.kembali
+      ) {
+        return NextResponse.json(
+          {},
+          {
+            status: 400,
+            statusText: "Transaksi pinjam harus dikembalikan semua",
+          }
+        );
+      } else {
+        increment.increment = 0;
+      }
+    } else if (trans.jenisTransaksiId === 1) {
       increment.increment = 0;
     } else {
       increment.increment = trans.kuantitas;
     }
+
     //tambah galon
     await prismaInstance.galonTersisa.update({
       where: {
@@ -105,23 +111,24 @@ export async function PUT(
         { status: 400 }
       );
     }
-    if(jenisTransaksiId !== 1) {
+
+    if (jenisTransaksiId !== 1) {
       const sisaGalon = await prismaInstance.galonTersisa.findUnique({
         where: {
           id: 1,
         },
       });
-  
+
       const selisihKuantitas = Math.abs(kuantitas - trans.kuantitas);
       const incrementOrDecrement: Prisma.IntFieldUpdateOperationsInput = {
         increment: undefined,
         decrement: undefined,
       };
-  
+
       if (!sisaGalon) {
         throw Error("Galon tidak ditemukan");
       }
-  
+
       // jika selisih lebih besar dari sisa galon, maka invalid
       if (selisihKuantitas > sisaGalon.jumlah) {
         return NextResponse.json(
@@ -136,8 +143,11 @@ export async function PUT(
       } else if (kuantitas < trans.kuantitas) {
         incrementOrDecrement.increment = selisihKuantitas;
       }
-  
-      if (!!incrementOrDecrement.increment || !!incrementOrDecrement.decrement) {
+
+      if (
+        !!incrementOrDecrement.increment ||
+        !!incrementOrDecrement.decrement
+      ) {
         await prismaInstance.galonTersisa.update({
           where: {
             id: 1,
@@ -161,6 +171,7 @@ export async function PUT(
         tanggal,
       },
     });
+
     return NextResponse.json(
       { message: "Berhasil di update" },
       { status: 200 }

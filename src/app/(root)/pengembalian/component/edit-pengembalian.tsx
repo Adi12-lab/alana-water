@@ -23,11 +23,11 @@ import {
 import { Input } from "~/components/ui/input";
 
 import { Button } from "~/components/ui/button";
-import { transaksiSchema, NewTransaksi } from "~/schema";
+import { PengembalianGalon, pengembalianGalonSchema } from "~/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "~/lib/utils";
 
-import { DataModal } from "../../transaksi/client";
+import { DataModal } from "../client";
 import { ModalProps } from "~/types";
 
 export default function EditPengembalian({
@@ -36,32 +36,24 @@ export default function EditPengembalian({
   setIsOpen,
 }: ModalProps<DataModal>) {
   const queryClient = useQueryClient();
-  const form = useForm<NewTransaksi>({
-    resolver: zodResolver(transaksiSchema),
+  const form = useForm<Pick<PengembalianGalon, "kembali">>({
+    resolver: zodResolver(pengembalianGalonSchema.pick({ kembali: true })),
     defaultValues: {
-      jenisTransaksiId: 0,
-      kuantitas: 0,
-      namaPembeli: "",
-      tanggal: new Date(),
-      galonKembali: 0,
+      kembali: 0,
     },
   });
 
   useEffect(() => {
     if (meta && meta.data) {
-      form.setValue("jenisTransaksiId", meta.data.jenisTransaksiId);
-      form.setValue("kuantitas", meta.data.kuantitas);
-      form.setValue("namaPembeli", meta.data.namaPembeli);
-      form.setValue("tanggal", new Date(meta.data.tanggal));
-      form.setValue("galonKembali", meta.data.galonKembali);
+      form.setValue("kembali", meta.data.kembali);
     }
   }, [form, meta]);
 
   const transaksiMutation = useMutation({
     mutationKey: ["edit-transaksi"],
-    mutationFn: async (payload: NewTransaksi) => {
+    mutationFn: async (payload: Pick<PengembalianGalon, "kembali">) => {
       return axiosInstance
-        .put("/api/pengembalian/" + meta.data.kode, payload)
+        .put("/api/pengembalian/" + meta.data.id, payload)
         .then((data) => data.data);
     },
     onSuccess: () => {
@@ -75,7 +67,7 @@ export default function EditPengembalian({
     },
   });
 
-  function onSubmit(values: NewTransaksi) {
+  function onSubmit(values: Pick<PengembalianGalon, "kembali">) {
     transaksiMutation.mutate(values);
   }
 
@@ -95,7 +87,7 @@ export default function EditPengembalian({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="galonKembali"
+              name="kembali"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Galon Kembali</FormLabel>
@@ -105,7 +97,7 @@ export default function EditPengembalian({
                       {...field}
                       onChange={(e) => {
                         const val = Number(e.target.value);
-                        if (val <= form.getValues("kuantitas") && val >= 0) {
+                        if (val <= meta.data.pinjam && val >= 0) {
                           field.onChange(Number(e.target.value));
                         }
                       }}

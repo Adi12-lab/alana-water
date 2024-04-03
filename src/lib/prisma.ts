@@ -31,6 +31,9 @@ const prismaPaginate = prismaInstance.$extends({
     transaksi: {
       paginate,
     },
+    pengembalianGalon: {
+      paginate,
+    },
   },
 });
 

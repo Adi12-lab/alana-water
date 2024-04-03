@@ -1,12 +1,10 @@
 "use client";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, Suspense, useEffect, useState } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import {
-  MoreHorizontal,
   Pencil,
-  Trash2,
   Calendar as CalendarIcon,
   Loader2,
   Folder,
@@ -29,9 +27,6 @@ import { Calendar } from "~/components/ui/calendar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
 } from "~/components/ui/dropdown-menu";
@@ -43,11 +38,29 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { useDebounce } from "~/hooks";
 import { axiosInstance, formatTanggal } from "~/lib/utils";
-import { DataPagination, DataModal } from "../transaksi/client";
 import EditPengembalian from "./component/edit-pengembalian";
 import PaginationComponent from "~/components/layout/pagination";
+import {
+  PengembalianGalon as PengembalianGalonType,
+  Transaksi,
+} from "~/schema";
+import { MetaPagination } from "~/types";
 
-export default function Pengembalian() {
+export type TransaksiAndPengembalian = Transaksi & {
+  pengembalianGalon: PengembalianGalonType;
+};
+
+export type DataModal = {
+  operation: "edit";
+  data: PengembalianGalonType;
+};
+
+export type DataPagination = {
+  payload: TransaksiAndPengembalian[];
+  meta: MetaPagination;
+};
+
+export default function PengembalianGalon() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const path = usePathname();
@@ -90,7 +103,8 @@ export default function Pengembalian() {
 
   return (
     <>
-      <div className="flex justify-between mb-4">
+      <h1 className="font-bold text-2xl">Pengembalian</h1>
+      <div className="flex justify-between mb-4 mt-6">
         <Input
           placeholder="Cari Pembeli atau Kode"
           className="w-1/3"
@@ -175,20 +189,17 @@ export default function Pengembalian() {
               <TableRow key={trans.kode}>
                 <TableCell>{formatTanggal(new Date(trans.tanggal))}</TableCell>
                 <TableCell>{trans.namaPembeli}</TableCell>
-                <TableCell>{trans.kuantitas}</TableCell>
-                <TableCell>{trans.galonKembali}</TableCell>
+                <TableCell>{trans.pengembalianGalon.pinjam}</TableCell>
+                <TableCell>{trans.pengembalianGalon.kembali}</TableCell>
                 <TableCell>
                   <Badge
                     variant={
-                      trans.kuantitas - trans.galonKembali === 0
+                      trans.pengembalianGalon.isLunas
                         ? "default"
                         : "destructive"
                     }
-                    
                   >
-                    {trans.kuantitas - trans.galonKembali === 0
-                      ? "LUNAS"
-                      : "BELUM LUNAS"}
+                    {trans.pengembalianGalon.isLunas ? "LUNAS" : "BELUM LUNAS"}
                   </Badge>
                 </TableCell>
                 <TableCell className="space-x-4">
@@ -197,7 +208,7 @@ export default function Pengembalian() {
                     size={"icon"}
                     onClick={() => {
                       setDataModal({
-                        data: trans,
+                        data: trans.pengembalianGalon,
                         operation: "edit",
                       });
                       setOpenModal(true);

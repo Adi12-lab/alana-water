@@ -8,8 +8,7 @@ import { NewTransaksi } from "~/schema";
 export async function POST(req: NextRequest) {
   try {
     const payload: NewTransaksi = await req.json();
-    const { jenisTransaksiId, kuantitas, namaPembeli, tanggal, galonKembali } =
-      payload;
+    const { jenisTransaksiId, kuantitas, namaPembeli, tanggal } = payload;
 
     if (!jenisTransaksiId || !kuantitas || !namaPembeli || !tanggal) {
       return NextResponse.json(
@@ -35,30 +34,26 @@ export async function POST(req: NextRequest) {
 
     if (!findJenisTransaksi) {
       return NextResponse.json(
-        { message: "Jenis transaksi tidak ditemukan" },
-        { status: 400 }
+        {},
+        { status: 400, statusText: "Jenis transaksi tidak ditemukan" }
       );
     }
 
-    if (kuantitas > sisaGalon.jumlah) {
-      return NextResponse.json(
-        { message: "Kuantitas melebihi sisa galon" },
-        { status: 400 }
-      );
-    }
-
-    if (findJenisTransaksi.id !== 1 && sisaGalon.jumlah > 0) {
-      //jika jenis transaksi bukan isi ulang dan sisa galon lebih dari 0, maka kurangi galon
-      await prismaInstance.galonTersisa.update({
-        where: {
-          id: 1,
-        },
-        data: {
-          jumlah: {
-            decrement: kuantitas,
+    if (sisaGalon.jumlah > 0) {
+      if (jenisTransaksiId !== 1) {
+        await prismaInstance.galonTersisa.update({
+          where: {
+            id: 1,
           },
-        },
-      });
+          data: {
+            jumlah: {
+              decrement: kuantitas,
+            },
+          },
+        });
+      }
+    } else {
+      return NextResponse.json({}, { status: 400, statusText: "Galon habis" });
     }
 
     const result = await prismaInstance.transaksi.create({
@@ -67,10 +62,19 @@ export async function POST(req: NextRequest) {
         namaPembeli,
         tanggal,
         jenisTransaksiId,
-        galonKembali,
         harga: findJenisTransaksi.harga,
       },
     });
+
+    if (jenisTransaksiId === 3) {
+      await prismaInstance.pengembalianGalon.create({
+        data: {
+          kembali: 0,
+          pinjam: result.kuantitas,
+          kodeTransaksi: result.kode,
+        },
+      });
+    }
     return NextResponse.json(result);
   } catch (err) {
     console.log("[POST_TRANSAKSI]" + err);

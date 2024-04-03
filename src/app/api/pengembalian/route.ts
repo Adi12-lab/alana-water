@@ -18,6 +18,11 @@ export async function GET(req: NextRequest) {
         },
       }),
       jenisTransaksiId: 3,
+      ...(status && {
+        pengembalianGalon: {
+          isLunas: status === 1,
+        },
+      }),
     };
     // Hanya tambahkan kondisi OR jika kodeOrPembeli ada
     if (kodeOrPembeli) {
@@ -36,34 +41,21 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    let payload, meta;
-    if (!!status) {
-      const result = await prismaInstance.transaksi.findMany({
+    const [payload, meta] = await prismaPaginate.transaksi
+      .paginate({
         where: whereQuery,
         orderBy: {
           tanggal: "desc",
         },
+        include: {
+          pengembalianGalon: true,
+        },
+      })
+      .withPages({
+        limit: 6,
+        page: !!page ? page : 1,
+        includePageCount: true,
       });
-
-      if (status === 1) {
-        payload = result.filter((item) => item.kuantitas === item.galonKembali);
-      } else {
-        payload = result.filter((item) => item.galonKembali !== item.kuantitas);
-      }
-    } else {
-      [payload, meta] = await prismaPaginate.transaksi
-        .paginate({
-          where: whereQuery,
-          orderBy: {
-            tanggal: "desc",
-          },
-        })
-        .withPages({
-          limit: 6,
-          page: !!page ? page : 1,
-          includePageCount: true,
-        });
-    }
 
     return NextResponse.json({ payload, meta: { ...meta } });
   } catch (err) {

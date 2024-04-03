@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, ChangeEvent} from "react";
+import React, { useState, useEffect, ChangeEvent, Suspense} from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -43,18 +43,18 @@ import {
 
 import AddTransaski from "./component/add-transaksi";
 import { axiosInstance, formatTanggal, formatRupiah } from "~/lib/utils";
-import { JenisTransaksi, JumlahGalon, Transaksi } from "~/schema";
+import { JenisTransaksi, JumlahGalon, Transaksi as TransaksiType } from "~/schema";
 import { EditDeleteOperation, MetaPagination } from "~/types";
 import DeleteTransaksi from "./component/delete-transaksi";
 import EditTransaksi from "./component/edit-transaksi";
 
 export type DataModal = {
   operation: EditDeleteOperation;
-  data: Transaksi;
+  data: TransaksiType;
 };
 
 export type DataPagination = {
-  payload: Transaksi[];
+  payload: TransaksiType[];
   meta: MetaPagination;
 };
 
@@ -126,7 +126,8 @@ export default function Transaksi() {
 
   return (
     <>
-      <div className="mb-4">
+      <h1 className="font-bold text-2xl">Transaksi</h1>
+      <div className="mb-4 mt-6">
         <AddTransaski galon={sisaGalon.data?.jumlah as number} />
       </div>
 
