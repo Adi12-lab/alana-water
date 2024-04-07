@@ -90,7 +90,8 @@ export async function GET(req: NextRequest) {
     const params = req.nextUrl.searchParams;
     const page = parseInt(params.get("page") as string);
     const kodeOrPembeli = params.get("q");
-    const tanggal = params.get("tanggal");
+    const from = params.get("from");
+    const to = params.get("to");
     const jenis = params.getAll("jenis");
     const jenisNumber = _.map(jenis, Number);
 
@@ -100,10 +101,10 @@ export async function GET(req: NextRequest) {
           in: jenisNumber,
         },
       }),
-      ...(tanggal && {
+      ...(from && {
         tanggal: {
-          gte: startOfDay(new Date(tanggal)),
-          lt: endOfDay(new Date(tanggal)),
+          gte: startOfDay(new Date(from)),
+          lt: endOfDay(new Date(to || from)),
         },
       }),
     };

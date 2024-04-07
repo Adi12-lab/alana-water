@@ -2,6 +2,8 @@
 import { ChangeEvent, useState } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { DateRange } from "react-day-picker";
+import {format} from "date-fns"
 
 import {
   Pencil,
@@ -44,7 +46,7 @@ import {
   Transaksi,
 } from "~/schema";
 import { MetaPagination } from "~/types";
-import { useDebouncedCallback, useDebounce } from "use-debounce";
+import { useDebouncedCallback } from "use-debounce";
 
 export type TransaksiAndPengembalian = Transaksi & {
   pengembalianGalon: PengembalianGalonType;
@@ -66,19 +68,21 @@ export default function PengembalianGalon() {
   const path = usePathname();
   const page = searchParams.get("page") || "1";
   const query = searchParams.get("q") || "";
-  const [tanggal, setTanggal] = useState<Date>();
+  const [date, setDate] = useState<DateRange>();
   const [status, setStatus] = useState<number>();
   const [openModal, setOpenModal] = useState(false);
   const [dataModal, setDataModal] = useState<DataModal>();
 
   const { data, isLoading } = useQuery<DataPagination>({
-    queryKey: ["pengembalian", page, query, tanggal, status],
+    queryKey: ["pengembalian", page, query, date, status],
     queryFn: async () => {
       return axiosInstance
         .get(
           `/api/pengembalian?page=${
             page ?? 1
-          }&q=${query}&status=${status}&tanggal=${tanggal || ""}`
+          }&q=${query}&status=${status}&from=${date?.from || ""}&to=${
+            date?.to || ""
+          }`
         )
         .then((data) => data.data);
     },
@@ -142,18 +146,31 @@ export default function PengembalianGalon() {
               variant={"outline"}
               className={cn(
                 "w-[280px] justify-start text-left font-normal",
-                !tanggal && "text-muted-foreground"
+                !date && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {tanggal ? tanggal.toLocaleDateString("id-ID") : "Pilih tanggal"}
+              {date?.from ? (
+                date.to ? (
+                  <>
+                    {format(date.from, "LLL dd, y")} -{" "}
+                    {format(date.to, "LLL dd, y")}
+                  </>
+                ) : (
+                  format(date.from, "LLL dd, y")
+                )
+              ) : (
+                <span>Cari tanggal</span>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
             <Calendar
-              mode="single"
-              selected={tanggal}
-              onSelect={setTanggal}
+              mode="range"
+              numberOfMonths={2}
+              defaultMonth={date?.from}
+              selected={date}
+              onSelect={setDate}
               initialFocus
             />
           </PopoverContent>

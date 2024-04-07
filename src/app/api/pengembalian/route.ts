@@ -10,13 +10,14 @@ export async function GET(req: NextRequest) {
     const params = req.nextUrl.searchParams;
     const page = parseInt(params.get("page") as string);
     const kodeOrPembeli = params.get("q");
-    const tanggal = params.get("tanggal");
+    const from = params.get("from");
+    const to = params.get("to");
     const status = parseInt(params.get("status") as string); //-1= belum lunas, 1 = lunas
     const whereQuery: Prisma.TransaksiWhereInput = {
-      ...(tanggal && {
+      ...(from && {
         tanggal: {
-          gte: startOfDay(new Date(tanggal)),
-          lt: endOfDay(new Date(tanggal)),
+          gte: startOfDay(new Date(from)),
+          lt: endOfDay(new Date(to || from)),
         },
       }),
       jenisTransaksiId: 3,
