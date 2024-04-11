@@ -12,8 +12,8 @@ export async function POST(req: NextRequest) {
 
     if (!jenisTransaksiId || !kuantitas || !namaPembeli || !tanggal) {
       return NextResponse.json(
-        { message: "Request tidak valid" },
-        { status: 400 }
+        {},
+        { status: 400, statusText: "Request tidak valid" }
       );
     }
     const sisaGalon = await prismaInstance.galonTersisa.findUnique({
@@ -39,21 +39,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (sisaGalon.jumlah > 0) {
-      if (jenisTransaksiId !== 1) {
-        await prismaInstance.galonTersisa.update({
-          where: {
-            id: 1,
+    if (sisaGalon.jumlah <= 0 || kuantitas > sisaGalon.jumlah) {
+      return NextResponse.json(
+        {},
+        { status: 400, statusText: "Galon tidak mencukupi" }
+      );
+      // return NextResponse.e
+    }
+    if (jenisTransaksiId !== 1) {
+      await prismaInstance.galonTersisa.update({
+        where: {
+          id: 1,
+        },
+        data: {
+          jumlah: {
+            decrement: kuantitas,
           },
-          data: {
-            jumlah: {
-              decrement: kuantitas,
-            },
-          },
-        });
-      }
-    } else {
-      return NextResponse.json({}, { status: 400, statusText: "Galon habis" });
+        },
+      });
     }
 
     const result = await prismaInstance.transaksi.create({

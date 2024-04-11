@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
+import { AxiosError, AxiosResponse } from "axios";
 
 import {
   Dialog,
@@ -70,9 +71,10 @@ export default function AddTransaski({ galon }: { galon: number }) {
       setOpenModal(false);
       queryClient.invalidateQueries({ queryKey: ["transaksi"] });
       queryClient.invalidateQueries({ queryKey: ["pengembalian"] });
+      queryClient.invalidateQueries({ queryKey: ["jumlah-galon"] });
     },
-    onError: () => {
-      toast.error("Transaksi gagal ditambahkan");
+    onError: (payload: AxiosError) => {
+      toast.error(payload.response?.statusText as string);
     },
   });
 
@@ -81,7 +83,13 @@ export default function AddTransaski({ galon }: { galon: number }) {
   }
 
   return (
-    <Dialog open={openModal} onOpenChange={setOpenModal}>
+    <Dialog
+      open={openModal}
+      onOpenChange={() => {
+        setOpenModal((isOpen) => !isOpen);
+        form.reset();
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant={"outline"}>Tambah Transaksi</Button>
       </DialogTrigger>

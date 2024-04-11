@@ -43,8 +43,8 @@ export default function DeleteTransaksi({
       });
     },
     onError: (payload: AxiosError) => {
-      if(payload.response) {
-        toast.error(payload.response.statusText)
+      if (payload.response) {
+        toast.error(payload.response.statusText);
       }
     },
   });
@@ -61,9 +61,11 @@ export default function DeleteTransaksi({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Anda yakin ?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Saat anda menghapus transaksi maka galon akan bertambah
-          </AlertDialogDescription>
+          {(meta && meta.data.jenisTransaksiId) !== 1 && (
+            <AlertDialogDescription>
+              Saat anda menghapus transaksi maka galon akan bertambah
+            </AlertDialogDescription>
+          )}
         </AlertDialogHeader>
         <AlertDialogFooter>
           <Button

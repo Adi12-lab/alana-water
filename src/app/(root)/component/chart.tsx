@@ -77,7 +77,7 @@ export default function Chart() {
           </div>
         </div>
         <div>
-          {isLoading   ? (
+          {isLoading ? (
             <div className="flex space-x-4">
               <Loader2 className="animate-spin" />
               <span>Merekap penghasilan...</span>
@@ -100,7 +100,7 @@ export default function Chart() {
                 tickFormatter={(value) => formatRupiah(value)}
                 fontSize={12}
               />
-              <Tooltip />
+              <Tooltip content={<CustomTooltip />} />
               <Bar
                 dataKey="monthlyTotal"
                 fill="#8884d8"
@@ -114,3 +114,24 @@ export default function Chart() {
     )
   );
 }
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Record<string, number>[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+  if (active && payload && payload.length) {
+    return (
+      <div
+        className="border border-purple-500 p-3 bg-white opacity-80"
+      >
+        <p className="font-bold">{label}</p>
+        <p className="text-green-500">{formatRupiah(payload[0].value)}</p>
+      </div>
+    );
+  }
+
+  return null;
+};

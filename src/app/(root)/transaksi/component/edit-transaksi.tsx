@@ -36,6 +36,7 @@ import { axiosInstance } from "~/lib/utils";
 
 import { DataModal } from "../client";
 import { ModalProps } from "~/types";
+import { AxiosError } from "axios";
 
 export default function EditTransaksi({
   meta,
@@ -84,9 +85,10 @@ export default function EditTransaksi({
       toast.success("Transaksi berhasil diedit");
       setIsOpen(false);
       queryClient.invalidateQueries({ queryKey: ["transaksi"] });
+      queryClient.invalidateQueries({ queryKey: ["jumlah-galon"] });
     },
-    onError: () => {
-      toast.error("Transaksi gagal diedit");
+    onError: (payload: AxiosError) => {
+      toast.error(payload.response?.statusText as string);
     },
   });
 
@@ -135,10 +137,14 @@ export default function EditTransaksi({
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />
                   </FormControl>
-                  <FormDescription>Sisa galon = {galon}</FormDescription>
-                  <FormDescription>
-                    Kuantitas pinjam tidak bisa diedit
-                  </FormDescription>
+                  {meta.data.jenisTransaksiId !== 1 && (
+                    <FormDescription>Sisa galon = {galon}</FormDescription>
+                  )}
+                  {meta.data.jenisTransaksiId === 3 && (
+                    <FormDescription>
+                      Kuantitas pinjam tidak bisa diedit
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}

@@ -84,8 +84,8 @@ export async function PUT(
 
     if (!namaPembeli || !kuantitas || !tanggal || !jenisTransaksiId) {
       return NextResponse.json(
-        { message: "Request tidak valid" },
-        { status: 400 }
+        {},
+        { status: 400, statusText: "Request tidak valid" }
       );
     }
 
@@ -96,8 +96,8 @@ export async function PUT(
     });
     if (!trans) {
       return NextResponse.json(
-        { message: "Transaksi tidak ditemukan" },
-        { status: 400 }
+        {},
+        { status: 400, statusText: "Transaksi tidak ditemukan" }
       );
     }
     const jenisTransaksi = await prismaInstance.jenisTranksasi.findUnique({
@@ -107,8 +107,8 @@ export async function PUT(
     });
     if (!jenisTransaksi) {
       return NextResponse.json(
-        { message: "Jenis Transaksi tidak ditemukan" },
-        { status: 400 }
+        {},
+        { status: 400, statusText: "Jenis Transaksi tidak ditemukan" }
       );
     }
 
@@ -129,11 +129,13 @@ export async function PUT(
         throw Error("Galon tidak ditemukan");
       }
 
-      // jika selisih lebih besar dari sisa galon, maka invalid
-      if (selisihKuantitas > sisaGalon.jumlah) {
+      if (
+        selisihKuantitas > sisaGalon.jumlah &&
+        kuantitas > trans.kuantitas
+      ) {
         return NextResponse.json(
-          { message: "Galon tidak cukup" },
-          { status: 405 }
+          {},
+          { status: 400, statusText: "Galon tidak cukup" }
         );
       }
       //jika kuantitas baru yang lebih besar dari kuantitas lama, maka galon decrement (kuantitas baru - lama)

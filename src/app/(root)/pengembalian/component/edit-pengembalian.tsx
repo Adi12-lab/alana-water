@@ -3,18 +3,17 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
+import { AxiosError } from "axios";
 
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -62,8 +61,8 @@ export default function EditPengembalian({
       queryClient.invalidateQueries({ queryKey: ["transaksi"] });
       queryClient.invalidateQueries({ queryKey: ["pengembalian"] });
     },
-    onError: () => {
-      toast.error("Pengembalian gagal diedit");
+    onError: (payload: AxiosError) => {
+      toast.error(payload.response?.statusText as string);
     },
   });
 

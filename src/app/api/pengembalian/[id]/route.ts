@@ -10,10 +10,10 @@ export async function PUT(
     const payload: PengembalianGalon = await req.json();
     const { kembali } = payload;
 
-    if (typeof kembali !== 'number') {
+    if (typeof kembali !== "number") {
       return NextResponse.json(
-        { message: "Request tidak valid" },
-        { status: 400 }
+        {},
+        { status: 400, statusText: "Request tidak valid" }
       );
     }
 
@@ -25,8 +25,8 @@ export async function PUT(
 
     if (!pengembalian) {
       return NextResponse.json(
-        { message: "Pengembalian tidak ditemukan" },
-        { status: 400 }
+        {},
+        { status: 400, statusText: "Pengembalian tidak ditemukan" }
       );
     }
 
@@ -49,8 +49,8 @@ export async function PUT(
     // jika selisih lebih besar dari sisa galon, maka invalid
     if (selisihGalonKembali > pengembalian.pinjam || selisihGalonKembali < 0) {
       return NextResponse.json(
-        { message: "Galon kembali tidak valid" },
-        { status: 405 }
+        {},
+        { status: 400, statusText: "Galon kembali tidak valid" }
       );
     }
     //jika galonKembali baru yang lebih besar dari galonKembali lama, maka galon increment (galonKembali baru - lama)
