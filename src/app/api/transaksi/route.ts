@@ -1,12 +1,10 @@
 import { Prisma } from "@prisma/client";
 import _ from "lodash";
 import { NextRequest, NextResponse } from "next/server";
-import { startOfDay, endOfDay } from "date-fns";
-import moment from "moment-timezone";
-import { toZonedTime } from "date-fns-tz";
-import { zone } from "~/constant";
 import { prismaInstance, prismaPaginate } from "~/lib/prisma";
 import { NewTransaksi } from "~/schema";
+import { plusSevenTime, substractSevenTime } from "~/lib/utils";
+import { endOfDay } from "date-fns";
 
 export async function POST(req: NextRequest) {
   try {
@@ -100,8 +98,6 @@ export async function GET(req: NextRequest) {
     const to = params.get("to");
     const jenis = params.getAll("jenis");
     const jenisNumber = _.map(jenis, Number);
-
-    console.log(process.env.TZ);
     const whereQuery: Prisma.TransaksiWhereInput = {
       ...(jenisNumber.length > 0 && {
         jenisTransaksiId: {
@@ -110,8 +106,8 @@ export async function GET(req: NextRequest) {
       }),
       ...(from && {
         tanggal: {
-          gte: startOfDay(new Date(from)),
-          lt: endOfDay(new Date(to || from)),
+          gte: substractSevenTime(new Date(from)),
+          lt: plusSevenTime(new Date(to || from)),
         },
       }),
     };
@@ -152,11 +148,13 @@ export async function GET(req: NextRequest) {
     });
 
     const total_kuantitas = _.sumBy(payload, (item) => item.kuantitas);
+    const total_pendapatan = _.sumBy(payload, (item) => item.total);
 
     return NextResponse.json({
       payload,
       total: {
         kuantitas: total_kuantitas,
+        pendapatan: total_pendapatan,
       },
       meta: { ...meta },
     });

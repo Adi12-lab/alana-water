@@ -5,6 +5,7 @@ import _ from "lodash";
 import { NextRequest, NextResponse } from "next/server";
 import { startOfDay, endOfDay } from "date-fns";
 import { prismaInstance, prismaPaginate } from "~/lib/prisma";
+import { substractSevenTime } from "~/lib/utils";
 export async function GET(req: NextRequest) {
   try {
     const params = req.nextUrl.searchParams;
@@ -16,8 +17,8 @@ export async function GET(req: NextRequest) {
     const whereQuery: Prisma.TransaksiWhereInput = {
       ...(from && {
         tanggal: {
-          gte: startOfDay(new Date(from)),
-          lt: endOfDay(new Date(to || from)),
+          gte: substractSevenTime(new Date(from)),
+          lt: substractSevenTime(new Date(to || from)),
         },
       }),
       jenisTransaksiId: 3,

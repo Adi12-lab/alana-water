@@ -19,6 +19,7 @@ type UserSafe = Pick<Users, "username">;
 
 import { EditDeleteOperation } from "~/types";
 import EditUser from "./components/edit-user";
+import DeleteUser from "./components/delete-user";
 
 export type DataModal = {
   operation: EditDeleteOperation;
@@ -83,6 +84,13 @@ function User() {
                       className="p-2 space-x-2 w-fit"
                       variant={"destructive"}
                       size={"icon"}
+                      onClick={() => {
+                        setOpenModal(true);
+                        setDataModal({
+                          data: user,
+                          operation: "delete",
+                        });
+                      }}
                     >
                       <span>Hapus</span>
                       <Trash2 />
@@ -95,6 +103,12 @@ function User() {
         </Table>
       </div>
       <EditUser
+        isOpen={openModal}
+        setIsOpen={setOpenModal}
+        meta={dataModal as DataModal}
+      />
+
+      <DeleteUser
         isOpen={openModal}
         setIsOpen={setOpenModal}
         meta={dataModal as DataModal}

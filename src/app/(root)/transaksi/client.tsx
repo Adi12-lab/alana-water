@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, ChangeEvent, useEffect } from "react";
+import React, { useState, ChangeEvent } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -63,6 +63,7 @@ export type DataPagination = {
   payload: TransaksiType[];
   total: {
     kuantitas: number;
+    pendapatan: number;
   };
   meta: MetaPagination;
 };
@@ -295,6 +296,12 @@ export default function Transaksi() {
               Total
             </TableCell>
             <TableCell>{data?.total.kuantitas}</TableCell>
+            <TableCell></TableCell>
+            <TableCell>
+              {
+                (data && data.total.pendapatan) && formatRupiah(data?.total.pendapatan as number)
+              }
+            </TableCell>
           </TableRow>
         </TableBody>
       </Table>

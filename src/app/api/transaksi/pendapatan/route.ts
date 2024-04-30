@@ -1,10 +1,8 @@
 export const revalidate = 0;
 
+import { plusSevenTime, substractSevenTime } from "~/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 import _ from "lodash";
-import { startOfDay, endOfDay } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
-import { zone } from "~/constant";
 import { prismaInstance } from "~/lib/prisma";
 export async function GET(req: NextRequest) {
   try {
@@ -13,8 +11,8 @@ export async function GET(req: NextRequest) {
     const tahun = params.get("tahun");
 
     if (tanggal) {
-      const localStartDate = startOfDay(new Date(tanggal));
-      const localEndDate = endOfDay(new Date(tanggal));
+      const localStartDate = substractSevenTime(new Date(tanggal));
+      const localEndDate = substractSevenTime(new Date(tanggal));
 
       const query = {
         tanggal: {
@@ -59,7 +57,7 @@ export async function GET(req: NextRequest) {
       });
 
       const groupedByMonth = _.groupBy(withTotal, (transaksi) => {
-        const date = new Date(transaksi.tanggal);
+        const date = new Date(plusSevenTime(transaksi.tanggal));
         return `${date.getMonth() + 1}`;
       });
 

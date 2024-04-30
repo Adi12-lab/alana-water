@@ -1,3 +1,4 @@
+import { Users } from "@prisma/client";
 import { z } from "zod";
 
 export const authSchema = z.object({
@@ -9,6 +10,7 @@ export const authSchema = z.object({
 });
 
 export type Auth = z.infer<typeof authSchema>;
+export type UserSafe = Pick<Users, 'username'>
 
 export const jenisTransaksiSchema = z.object({
   nama: z.string().min(2, { message: "Nama transaksi harus ada" }),

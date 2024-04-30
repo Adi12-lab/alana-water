@@ -59,6 +59,7 @@ export default function EditUser({
     onSuccess: () => {
       toast.success("User berhasil diedit");
       setIsOpen(false);
+      form.reset()
       queryClient.invalidateQueries({ queryKey: ["user"] });
     },
     onError: (payload: AxiosError) => {
@@ -75,7 +76,6 @@ export default function EditUser({
       open={isOpen && meta.operation === "edit"}
       onOpenChange={() => {
         setIsOpen(!isOpen);
-        form.reset();
       }}
     >
       <DialogContent>
