@@ -18,4 +18,4 @@ export const routes = {
   unprotected: ["/login"],
 };
 
-export const zone = process.env.ZONE as string;
+export const zone = process.env.TIME_ZONE as string;

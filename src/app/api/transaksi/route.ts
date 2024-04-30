@@ -2,10 +2,11 @@ import { Prisma } from "@prisma/client";
 import _ from "lodash";
 import { NextRequest, NextResponse } from "next/server";
 import { startOfDay, endOfDay } from "date-fns";
+import moment from "moment-timezone";
 import { toZonedTime } from "date-fns-tz";
+import { zone } from "~/constant";
 import { prismaInstance, prismaPaginate } from "~/lib/prisma";
 import { NewTransaksi } from "~/schema";
-import { zone } from "~/constant";
 
 export async function POST(req: NextRequest) {
   try {
@@ -100,10 +101,7 @@ export async function GET(req: NextRequest) {
     const jenis = params.getAll("jenis");
     const jenisNumber = _.map(jenis, Number);
 
-    // console.log(toZonedTime(startOfDay(new Date(from)), zone))
-    if (from) {
-      console.log(startOfDay(new Date(from)));
-    }
+    console.log(process.env.TZ);
     const whereQuery: Prisma.TransaksiWhereInput = {
       ...(jenisNumber.length > 0 && {
         jenisTransaksiId: {
@@ -112,8 +110,8 @@ export async function GET(req: NextRequest) {
       }),
       ...(from && {
         tanggal: {
-          gte: toZonedTime(startOfDay(new Date(from)), zone),
-          lt: toZonedTime(endOfDay(new Date(to || from)), zone),
+          gte: startOfDay(new Date(from)),
+          lt: endOfDay(new Date(to || from)),
         },
       }),
     };
