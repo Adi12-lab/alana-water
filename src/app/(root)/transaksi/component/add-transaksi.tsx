@@ -4,7 +4,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { AxiosError, AxiosResponse } from "axios";
-
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "~/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -28,13 +30,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import { Calendar } from "~/components/ui/calendar";
 import { Input } from "~/components/ui/input";
 
 import { Button } from "~/components/ui/button";
 import { transaksiSchema, NewTransaksi } from "~/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "~/lib/utils";
-import { JenisTranksasi } from "@prisma/client";
+import { JenisTransaksi } from "@prisma/client";
 
 export default function AddTransaski({ galon }: { galon: number }) {
   const queryClient = useQueryClient();
@@ -49,7 +57,7 @@ export default function AddTransaski({ galon }: { galon: number }) {
     },
   });
 
-  const { data = [] } = useQuery<JenisTranksasi[]>({
+  const { data = [] } = useQuery<JenisTransaksi[]>({
     queryKey: ["jenis-transaksi"],
     queryFn: async () => {
       return axiosInstance
@@ -164,6 +172,48 @@ export default function AddTransaski({ galon }: { galon: number }) {
                         ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tanggal"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Tanggal transaksi</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-[240px] pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "LLL dd, y")
+                          ) : (
+                            <span>Tanggal transaksi</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}

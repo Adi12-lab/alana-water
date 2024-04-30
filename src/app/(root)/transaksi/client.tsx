@@ -11,7 +11,7 @@ import {
   RefreshCcw,
 } from "lucide-react";
 import { DateRange } from "react-day-picker";
-import { addDays, format } from "date-fns";
+import { format } from "date-fns";
 import { useDebouncedCallback } from "use-debounce";
 import { cn } from "~/lib/utils";
 
@@ -61,6 +61,9 @@ export type DataModal = {
 
 export type DataPagination = {
   payload: TransaksiType[];
+  total: {
+    kuantitas: number;
+  };
   meta: MetaPagination;
 };
 
@@ -287,10 +290,18 @@ export default function Transaksi() {
               </TableRow>
             ))
           )}
+          <TableRow className="font-bold">
+            <TableCell colSpan={3} className="text-center">
+              Total
+            </TableCell>
+            <TableCell>{data?.total.kuantitas}</TableCell>
+          </TableRow>
         </TableBody>
       </Table>
       <div className="mt-4">
-        {data && <PaginationComponent data={data.meta} path={path} />}
+        {data && (
+          <PaginationComponent data={data.meta} path={path} query={query} />
+        )}
       </div>
 
       <EditTransaksi

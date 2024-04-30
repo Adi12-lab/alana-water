@@ -13,7 +13,7 @@ export default function GalonDipinjam() {
     },
   });
   return (
-    <Card className="shadow-md rounded-2xl w-[300px] p-5">
+    <Card className="shadow-md rounded-2xl p-5">
       <div className="flex justify-between">
         <CardTitle className="text-sm font-normal">Galon Dipinjam</CardTitle>
         <Milk />

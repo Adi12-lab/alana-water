@@ -17,3 +17,5 @@ export const routes = {
   protected: ["/", "/jenis-transaksi", "/jumlah-galon", "/transaksi", "/user"],
   unprotected: ["/login"],
 };
+
+export const zone = process.env.ZONE as string;

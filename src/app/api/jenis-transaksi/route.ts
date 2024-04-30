@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await prismaInstance.jenisTranksasi.create({
+    const result = await prismaInstance.jenisTransaksi.create({
       data: {
         harga,
         nama,
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
-    const result = await prismaInstance.jenisTranksasi.findMany();
+    const result = await prismaInstance.jenisTransaksi.findMany();
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(

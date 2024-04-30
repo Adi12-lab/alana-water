@@ -22,7 +22,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-    const users = await prismaInstance.users.findMany();
-    return NextResponse.json({ status: 200, payload: { ...users } });
+  const users = await prismaInstance.users.findMany({
+    select: {
+      username: true,
+    },
+  });
+  return NextResponse.json([...users]);
 }
-

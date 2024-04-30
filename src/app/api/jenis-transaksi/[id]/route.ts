@@ -7,7 +7,7 @@ export async function DELETE(
 ) {
   try {
     const id = parseInt(params.id);
-    const result = await prismaInstance.jenisTranksasi.delete({
+    const result = await prismaInstance.jenisTransaksi.delete({
       where: {
         id,
       },
@@ -36,7 +36,7 @@ export async function PUT(
       );
     }
 
-    const result = await prismaInstance.jenisTranksasi.update({
+    const result = await prismaInstance.jenisTransaksi.update({
       where: {
         id,
       },

@@ -2,8 +2,10 @@ import { Prisma } from "@prisma/client";
 import _ from "lodash";
 import { NextRequest, NextResponse } from "next/server";
 import { startOfDay, endOfDay } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import { prismaInstance, prismaPaginate } from "~/lib/prisma";
 import { NewTransaksi } from "~/schema";
+import { zone } from "~/constant";
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,7 +28,7 @@ export async function POST(req: NextRequest) {
       throw Error("Kesalahan database galon");
     }
 
-    const findJenisTransaksi = await prismaInstance.jenisTranksasi.findUnique({
+    const findJenisTransaksi = await prismaInstance.jenisTransaksi.findUnique({
       where: {
         id: jenisTransaksiId,
       },
@@ -98,6 +100,10 @@ export async function GET(req: NextRequest) {
     const jenis = params.getAll("jenis");
     const jenisNumber = _.map(jenis, Number);
 
+    // console.log(toZonedTime(startOfDay(new Date(from)), zone))
+    if (from) {
+      console.log(startOfDay(new Date(from)));
+    }
     const whereQuery: Prisma.TransaksiWhereInput = {
       ...(jenisNumber.length > 0 && {
         jenisTransaksiId: {
@@ -106,8 +112,8 @@ export async function GET(req: NextRequest) {
       }),
       ...(from && {
         tanggal: {
-          gte: startOfDay(new Date(from)),
-          lt: endOfDay(new Date(to || from)),
+          gte: toZonedTime(startOfDay(new Date(from)), zone),
+          lt: toZonedTime(endOfDay(new Date(to || from)), zone),
         },
       }),
     };
@@ -117,7 +123,6 @@ export async function GET(req: NextRequest) {
         {
           namaPembeli: {
             contains: kodeOrPembeli,
-            mode: "insensitive",
           },
         },
         {
@@ -139,7 +144,7 @@ export async function GET(req: NextRequest) {
         },
       })
       .withPages({
-        limit: 6,
+        limit: 30,
         page: !!page ? page : 1,
         includePageCount: true,
       });
@@ -148,7 +153,15 @@ export async function GET(req: NextRequest) {
       return { ...trans, total };
     });
 
-    return NextResponse.json({ payload, meta: { ...meta } });
+    const total_kuantitas = _.sumBy(payload, (item) => item.kuantitas);
+
+    return NextResponse.json({
+      payload,
+      total: {
+        kuantitas: total_kuantitas,
+      },
+      meta: { ...meta },
+    });
   } catch (err) {
     console.log("[GET_TRANSAKSII] " + err);
     return NextResponse.json(

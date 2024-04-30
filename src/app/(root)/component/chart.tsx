@@ -10,8 +10,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
 import {
   Select,
@@ -23,6 +21,7 @@ import {
 import { bulanIndonesia } from "~/constant";
 import { axiosInstance, formatRupiah } from "~/lib/utils";
 import { Loader2 } from "lucide-react";
+import { useMediaQuery } from "~/hooks";
 
 export default function Chart() {
   const [year, setYear] = useState(2024);
@@ -31,6 +30,7 @@ export default function Chart() {
     setYear(new Date().getFullYear());
   }, []);
 
+  const isDesktop = useMediaQuery('(min-width: 768px)')
   const { data, isLoading } = useQuery({
     queryKey: ["pendapatan", year],
     queryFn: async () => {
@@ -84,7 +84,7 @@ export default function Chart() {
             </div>
           ) : (
             <BarChart
-              width={1200}
+              width={isDesktop ? 1200 : 500}
               height={300}
               data={data?.months}
               margin={{

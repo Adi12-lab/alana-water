@@ -3,7 +3,7 @@ import { ChangeEvent, useState } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { DateRange } from "react-day-picker";
-import {format} from "date-fns"
+import { format } from "date-fns";
 
 import {
   Pencil,
@@ -59,6 +59,10 @@ export type DataModal = {
 
 export type DataPagination = {
   payload: TransaksiAndPengembalian[];
+  total: {
+    pinjam: number;
+    kembali: number;
+  };
   meta: MetaPagination;
 };
 
@@ -240,10 +244,19 @@ export default function PengembalianGalon() {
               </TableRow>
             ))
           )}
+          <TableRow className="font-bold">
+            <TableCell colSpan={2} className="text-center">
+              Total
+            </TableCell>
+            <TableCell>{data?.total.pinjam}</TableCell>
+            <TableCell>{data?.total.kembali}</TableCell>
+          </TableRow>
         </TableBody>
       </Table>
       <div className="mt-4">
-        {data && <PaginationComponent data={data.meta} path={path} />}
+        {data && (
+          <PaginationComponent data={data.meta} path={path} query={query} />
+        )}
       </div>
       <EditPengembalian
         isOpen={openModal}

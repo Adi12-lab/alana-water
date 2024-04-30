@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { Prisma } from "@prisma/client";
 import _ from "lodash";
@@ -33,7 +33,6 @@ export async function GET(req: NextRequest) {
         {
           namaPembeli: {
             contains: kodeOrPembeli,
-            mode: "insensitive",
           },
         },
         {
@@ -55,12 +54,51 @@ export async function GET(req: NextRequest) {
         },
       })
       .withPages({
-        limit: 6,
+        limit: 30,
         page: !!page ? page : 1,
         includePageCount: true,
       });
 
-    return NextResponse.json({ payload, meta: { ...meta } });
+    const totalPinjamKembali = [];
+    if (kodeOrPembeli) {
+      totalPinjamKembali.push(
+        `(transaksi."nama_pembeli" ILIKE '%${kodeOrPembeli}%' OR transaksi.kode ILIKE '%${kodeOrPembeli}%')`
+      );
+    }
+
+    if (from) {
+      totalPinjamKembali.push(
+        `transaksi.tanggal BETWEEN '${from}' AND '${to || from}'`
+      );
+    }
+    const totalPinjam = _.sumBy(payload, (item) => {
+      if (item.pengembalianGalon) return item.pengembalianGalon.pinjam;
+      return 0;
+    });
+    const totalKembali = _.sumBy(payload, (item) => {
+      if (item.pengembalianGalon) return item.pengembalianGalon.kembali;
+      return 0;
+    });
+    // const pinjamAndKembali: { total_pinjam: number; total_kembali: number } =
+    //   await prismaInstance.$queryRawUnsafe(`SELECT
+    //   CAST(SUM(pengembalian.pinjam) AS INTEGER) AS pinjam,
+    //   CAST(SUM(pengembalian.kembali) AS INTEGER) AS kembali
+    // FROM
+    //   public."Transaksi" AS transaksi
+    //   INNER JOIN public."PengembalianGalon" AS pengembalian ON transaksi.kode = pengembalian."kodeTransaksi" ${
+    //     totalPinjamKembali.length > 0
+    //       ? "WHERE " + totalPinjamKembali.join("AND")
+    //       : ""
+    //   }`);
+
+    return NextResponse.json({
+      payload,
+      total: {
+        pinjam: totalPinjam,
+        kembali: totalKembali,
+      },
+      meta: { ...meta },
+    });
   } catch (err) {
     console.log("[GET_PENGEMBALIAN]" + err);
     return NextResponse.json(

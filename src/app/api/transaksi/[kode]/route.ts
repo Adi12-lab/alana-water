@@ -100,7 +100,7 @@ export async function PUT(
         { status: 400, statusText: "Transaksi tidak ditemukan" }
       );
     }
-    const jenisTransaksi = await prismaInstance.jenisTranksasi.findUnique({
+    const jenisTransaksi = await prismaInstance.jenisTransaksi.findUnique({
       where: {
         id: jenisTransaksiId,
       },

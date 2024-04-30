@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Sidebar as SidebarComponent, Menu, MenuItem } from "react-pro-sidebar";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { GripVertical, Warehouse, GanttChartSquare, Power, Milk, List, RefreshCcw } from "lucide-react";
+import { GripVertical, Warehouse, GanttChartSquare, Power, Milk, List, RefreshCcw, User } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 
 import { axiosInstance, rgbToHex } from "~/lib/utils";
@@ -112,6 +112,13 @@ function Sidebar({ toggled, setToggled, setBroken }: SidebarProps) {
           active={pathname === "/jenis-transaksi"}
         >
           Jenis Transaksi
+        </MenuItem>
+        <MenuItem
+          component={<Link href="/user" />}
+          icon={<User size={20} />}
+          active={pathname === "/user"}
+        >
+          User
         </MenuItem>
         <MenuItem icon={<Power />} onClick={() => logoutMutation.mutate()}>
           Logout

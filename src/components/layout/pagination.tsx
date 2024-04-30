@@ -13,8 +13,10 @@ import {
 const PaginationComponent = ({
   data,
   path,
+  query
 }: {
   data: MetaPagination;
+  query: string;
   path: string;
 }) => {
   if (!data.pageCount) return null;
@@ -34,11 +36,9 @@ const PaginationComponent = ({
         startPage = 1;
         endPage = 10;
       } else if (data.currentPage + 4 >= data.pageCount) {
-        // 현재 페이지가 마지막에서 5번째 이전 페이지보다 크거나 같으면 마지막 10개 페이지
         startPage = data.pageCount - 9;
         endPage = data.pageCount;
       } else {
-        // 그 외의 경우 현재 페이지를 중심으로 앞뒤로 4개씩
         startPage = data.currentPage - 5;
         endPage = data.currentPage + 4;
       }
@@ -59,13 +59,13 @@ const PaginationComponent = ({
       <PaginationContent>
         {data.previousPage && (
           <PaginationItem>
-            <PaginationPrevious href={`${path}?page=${data.previousPage}`} />
+            <PaginationPrevious href={!!query ?`${path}?q=${query}&page=${data.previousPage}` :`${path}?page=${data.previousPage}`} />
           </PaginationItem>
         )}
         {pageNumbers.map((number, index) => (
           <PaginationItem key={index}>
             <PaginationLink
-              href={`${path}?page=${number}`}
+              href={!!query ?`${path}?q=${query}&page=${data.previousPage}` :`${path}?page=${data.previousPage}`}
               isActive={data.currentPage === number}
             >
               {number}
@@ -80,7 +80,7 @@ const PaginationComponent = ({
         {data.pageCount > 10 && (
           <PaginationItem>
             <PaginationLink
-              href={`${path}?page=${data.pageCount}`}
+              href={!!query ?`${path}&page=${data.previousPage}` :`${path}?page=${data.previousPage}`}
               isActive={data.currentPage === data.pageCount}
             >
               {data.pageCount}
@@ -89,7 +89,7 @@ const PaginationComponent = ({
         )}
           {data.nextPage && (
           <PaginationItem>
-            <PaginationNext href={`${path}?page=${data.nextPage}`} />
+            <PaginationNext href={!!query ?`${path}?q=${query}&page=${data.nextPage}` :`${path}?page=${data.nextPage}`} />
           </PaginationItem>
         )}
       </PaginationContent>

@@ -1,6 +1,10 @@
+export const revalidate = 0;
+
 import { NextRequest, NextResponse } from "next/server";
 import _ from "lodash";
 import { startOfDay, endOfDay } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
+import { zone } from "~/constant";
 import { prismaInstance } from "~/lib/prisma";
 export async function GET(req: NextRequest) {
   try {

@@ -1,5 +1,11 @@
-export default function User() {
+import { Suspense } from "react";
+import User from "./client"
+
+export default function Page() {
+  
   return (
-    <div>User</div>
+    <Suspense>
+      <User />
+    </Suspense>
   )
 }
